@@ -6,6 +6,9 @@ from django.db.models import Q
 from .models import Category, Book, BookReview
 from .serializers import CategorySerializer, BookListSerializer, BookDetailSerializer, BookReviewSerializer
 from .filters import BookFilter
+from rest_framework import generics, filters, permissions
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 class CategoryListView(generics.ListAPIView):
     """Kateqoriyalar siyahısı"""
@@ -50,6 +53,15 @@ class NewBooksView(generics.ListAPIView):
     """Yeni kitablar"""
     queryset = Book.objects.filter(is_active=True, is_new=True).select_related('category').prefetch_related('authors')
     serializer_class = BookListSerializer
+
+class BookReviewListView(generics.ListAPIView):
+    """Verilən kitab üçün rəylər"""
+    serializer_class = BookReviewSerializer
+
+    def get_queryset(self):
+        book_id = self.kwargs['pk']
+        return BookReview.objects.filter(book_id=book_id)
+
 
 @api_view(['GET'])
 def book_stats(request):
