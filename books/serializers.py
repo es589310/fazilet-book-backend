@@ -17,7 +17,14 @@ class PublisherSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'address', 'phone', 'email', 'website']
 
 class BookReviewSerializer(serializers.ModelSerializer):
-    user_name = serializers.CharField(source='user.username', read_only=True)
+    user_name = serializers.SerializerMethodField()
+    
+    def get_user_name(self, obj):
+        if hasattr(obj.user, 'first_name') and obj.user.first_name:
+            if hasattr(obj.user, 'last_name') and obj.user.last_name:
+                return f"{obj.user.first_name} {obj.user.last_name}"
+            return obj.user.first_name
+        return obj.user.username
     
     class Meta:
         model = BookReview
@@ -61,3 +68,10 @@ class BookDetailSerializer(serializers.ModelSerializer):
             'views_count', 'sales_count', 'created_at',
             'average_rating', 'reviews_count', 'discount_percentage', 'reviews'
         ]
+
+from .models import Banner
+
+class BannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Banner
+        fields = ['id', 'title', 'subtitle', 'image', 'link', 'is_active']
