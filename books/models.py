@@ -142,7 +142,24 @@ class BookReview(models.Model):
         verbose_name = "Kitab Rəyi"
         verbose_name_plural = "Kitab Rəyləri"
         ordering = ['-created_at']
-        unique_together = ['book', 'user']  # Hər istifadəçi bir kitaba yalnız bir rəy yaza bilər
+        # unique_together kaldırıldı - kullanıcılar birden fazla rəy yazabilir
     
     def __str__(self):
         return f"{self.book.title} - {self.user.username} ({self.rating}/5)"
+
+from django.db import models
+
+class Banner(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Başlıq")
+    subtitle = models.CharField(max_length=300, blank=True, verbose_name="Alt başlıq")
+    image = models.ImageField(upload_to='banners/', verbose_name="Şəkil")
+    link = models.URLField(blank=True, verbose_name="Link")
+    is_active = models.BooleanField(default=True, verbose_name="Aktiv")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Reklam Panosu"
+        verbose_name_plural = "Reklam Panoları"
+
+    def __str__(self):
+        return self.title

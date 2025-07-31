@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import Category, Author, Publisher, Book, BookReview
+from .models import Banner
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -77,3 +78,10 @@ class BookReviewAdmin(admin.ModelAdmin):
     search_fields = ['book__title', 'user__username', 'comment']
     list_editable = ['is_approved']
     readonly_fields = ['created_at']
+
+from .models import Banner
+
+@admin.register(Banner)
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ("title", "is_active", "created_at")
+    list_filter = ("is_active",)

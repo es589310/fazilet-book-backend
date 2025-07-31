@@ -9,6 +9,10 @@ from .filters import BookFilter
 from rest_framework import generics, filters, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from .models import Banner
+from .serializers import BannerSerializer
+from rest_framework.generics import ListAPIView
 
 class CategoryListView(generics.ListAPIView):
     """Kateqoriyalar siyahısı"""
@@ -54,13 +58,32 @@ class NewBooksView(generics.ListAPIView):
     queryset = Book.objects.filter(is_active=True, is_new=True).select_related('category').prefetch_related('authors')
     serializer_class = BookListSerializer
 
-class BookReviewListView(generics.ListAPIView):
-    """Verilən kitab üçün rəylər"""
+class BookReviewListView(generics.ListCreateAPIView):
     serializer_class = BookReviewSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated()]
+        return [AllowAny()]
 
     def get_queryset(self):
         book_id = self.kwargs['pk']
-        return BookReview.objects.filter(book_id=book_id)
+        return BookReview.objects.filter(book_id=book_id, is_approved=True).select_related('user')
+
+    def perform_create(self, serializer):
+        book_id = self.kwargs['pk']
+        review = serializer.save(
+            book_id=book_id,
+            user=self.request.user
+        )
+        return review
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        review = self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=201, headers=headers)
 
 
 @api_view(['GET'])
@@ -77,3 +100,7 @@ def book_stats(request):
         'bestsellers': bestsellers,
         'new_books': new_books,
     })
+
+class BannerListView(ListAPIView):
+    queryset = Banner.objects.filter(is_active=True)
+    serializer_class = BannerSerializer
