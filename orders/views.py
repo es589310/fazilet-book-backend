@@ -1,57 +1,99 @@
-from rest_framework import generics, status, permissions
-from rest_framework.decorators import api_view, permission_classes
+# orders/views.py
+from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
-from .models import Cart, CartItem, Order
+from .models import Cart, CartItem
+from .serializers import CartSerializer, CartItemSerializer
+from users.models import AnonymousUser
 from books.models import Book
-from .serializers import CartSerializer, CartItemSerializer, OrderSerializer, OrderCreateSerializer
+import uuid
 
-class CartView(generics.RetrieveAPIView):
-    """İstifadəçinin səbəti"""
+class CartView(generics.RetrieveUpdateDestroyAPIView):
+    """Səbət görüntüləmə və yeniləmə"""
     serializer_class = CartSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [AllowAny]
     
     def get_object(self):
-        cart, created = Cart.objects.get_or_create(user=self.request.user)
+        device_id = self.request.META.get('HTTP_X_DEVICE_ID', str(uuid.uuid4()))
+        anonymous_user = AnonymousUser.get_or_create_anonymous(device_id)
+        
+        if self.request.user.is_authenticated:
+            cart, created = Cart.objects.get_or_create(user=self.request.user)
+        else:
+            cart = Cart.objects.filter(anonymous_user=anonymous_user).first()
+            if not cart:
+                cart = Cart.objects.create(anonymous_user=anonymous_user)
+        
         return cart
 
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-def add_to_cart(request):
-    """Səbətə məhsul əlavə et"""
-    book_id = request.data.get('book_id')
-    quantity = int(request.data.get('quantity', 1))
+class AddToCartView(generics.CreateAPIView):
+    """Səbətə əlavə etmə"""
+    serializer_class = CartItemSerializer
+    permission_classes = [AllowAny]
     
-    if not book_id:
-        return Response({'error': 'Kitab ID tələb olunur!'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    book = get_object_or_404(Book, id=book_id, is_active=True)
-    cart, created = Cart.objects.get_or_create(user=request.user)
-    
-    # Stok yoxlaması
-    cart_item, created = CartItem.objects.get_or_create(cart=cart, book=book)
-    new_quantity = quantity if created else cart_item.quantity + quantity
-    
-    if new_quantity > book.stock_quantity:
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        book = serializer.validated_data['book']  # artıq model obyekti
+        quantity = serializer.validated_data.get('quantity', 1)
+        
+        if quantity > book.stock_quantity:
+            return Response({
+                'error': f'Stokda yalnız {book.stock_quantity} ədəd var!'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        device_id = self.request.META.get('HTTP_X_DEVICE_ID', str(uuid.uuid4()))
+        anonymous_user = AnonymousUser.get_or_create_anonymous(device_id)
+        
+        
+        if self.request.user.is_authenticated:
+            cart, created = Cart.objects.get_or_create(user=self.request.user)
+        else:
+            cart = Cart.objects.filter(anonymous_user=anonymous_user).first()
+            if not cart:
+                cart = Cart.objects.create(anonymous_user=anonymous_user)
+
+
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            book=book,
+            defaults={'quantity': quantity}
+        )
+        
+        if not created:
+            cart_item.quantity += quantity
+            cart_item.save()
+        
         return Response({
-            'error': f'Stokda yalnız {book.stock_quantity} ədəd var!'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
-    cart_item.quantity = new_quantity
-    cart_item.save()
-    
-    return Response({
-        'message': 'Məhsul səbətə əlavə edildi!',
-        'cart': CartSerializer(cart).data
-    })
+            'message': 'Kitab səbətə əlavə edildi',
+            'cart_item_id': cart_item.id,
+            'quantity': cart_item.quantity,
+            'cart': CartSerializer(cart).data
+        }, status=status.HTTP_201_CREATED)
+
 
 @api_view(['PUT'])
-@permission_classes([permissions.IsAuthenticated])
+@permission_classes([AllowAny])
 def update_cart_item(request, item_id):
     """Səbət elementini yenilə"""
     quantity = int(request.data.get('quantity', 1))
     
-    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    # Device ID-ni al
+    device_id = request.META.get('HTTP_X_DEVICE_ID')
+    if not device_id:
+        device_id = str(uuid.uuid4())
+    
+    # Anonymous user yaradır və ya mövcud olanı tapır
+    anonymous_user = AnonymousUser.get_or_create_anonymous(device_id)
+    
+    # Cart item-i tap
+    if request.user.is_authenticated:
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    else:
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__anonymous_user=anonymous_user)
     
     if quantity <= 0:
         cart_item.delete()
@@ -71,41 +113,23 @@ def update_cart_item(request, item_id):
     })
 
 @api_view(['DELETE'])
-@permission_classes([permissions.IsAuthenticated])
-def remove_from_cart(request, item_id):
+@permission_classes([AllowAny])
+def remove_cart_item(request, item_id):
     """Səbətdən məhsul sil"""
-    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    # Device ID-ni al
+    device_id = request.META.get('HTTP_X_DEVICE_ID')
+    if not device_id:
+        device_id = str(uuid.uuid4())
+    
+    # Anonymous user yaradır və ya mövcud olanı tapır
+    anonymous_user = AnonymousUser.get_or_create_anonymous(device_id)
+    
+    # Cart item-i tap
+    if request.user.is_authenticated:
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    else:
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__anonymous_user=anonymous_user)
+    
     cart_item.delete()
     
     return Response({'message': 'Məhsul səbətdən silindi!'})
-
-class OrderListView(generics.ListAPIView):
-    """İstifadəçinin sifarişləri"""
-    serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
-
-class OrderDetailView(generics.RetrieveAPIView):
-    """Sifariş detalları"""
-    serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
-
-class OrderCreateView(generics.CreateAPIView):
-    """Sifariş yarat"""
-    serializer_class = OrderCreateSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        order = serializer.save()
-        
-        return Response({
-            'message': 'Sifariş uğurla yaradıldı!',
-            'order': OrderSerializer(order).data
-        }, status=status.HTTP_201_CREATED)

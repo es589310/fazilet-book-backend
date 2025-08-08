@@ -1,10 +1,15 @@
 from rest_framework import serializers
-from .models import Category, Author, Publisher, Book, BookReview
+from .models import Category, Author, Publisher, Book, BookReview, Banner, SiteSettings
 
 class CategorySerializer(serializers.ModelSerializer):
+    books_count = serializers.SerializerMethodField()
+    
     class Meta:
         model = Category
-        fields = ['id', 'name', 'slug', 'description', 'image']
+        fields = ['id', 'name', 'description', 'is_active', 'books_count']
+    
+    def get_books_count(self, obj):
+        return obj.book_set.count()
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,17 +24,21 @@ class PublisherSerializer(serializers.ModelSerializer):
 class BookReviewSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
     
-    def get_user_name(self, obj):
-        if hasattr(obj.user, 'first_name') and obj.user.first_name:
-            if hasattr(obj.user, 'last_name') and obj.user.last_name:
-                return f"{obj.user.first_name} {obj.user.last_name}"
-            return obj.user.first_name
-        return obj.user.username
-    
     class Meta:
         model = BookReview
-        fields = ['id', 'user', 'user_name', 'rating', 'comment', 'created_at']
-        read_only_fields = ['user']
+        fields = ['id', 'rating', 'comment', 'created_at', 'user_name']
+        read_only_fields = ['id', 'created_at', 'user_name']
+    
+    def get_user_name(self, obj):
+        return obj.user_name
+    
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            validated_data['user'] = request.user
+        elif request and hasattr(request, 'anonymous_user'):
+            validated_data['anonymous_user'] = request.anonymous_user
+        return super().create(validated_data)
 
 class BookListSerializer(serializers.ModelSerializer):
     """Kitab siyahısı üçün sadə serializer"""
@@ -75,3 +84,12 @@ class BannerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Banner
         fields = ['id', 'title', 'subtitle', 'image', 'link', 'is_active']
+
+class SiteSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SiteSettings
+        fields = [
+            'site_name', 'site_description', 'phone', 'email', 
+            'address', 'working_hours', 'copyright_year', 'facebook', 'instagram', 
+            'twitter', 'youtube'
+        ]

@@ -13,7 +13,7 @@ urlpatterns = [
     path('api/auth/', include('users.urls')),
     path('api/books/', include('books.urls')),
     path('api/orders/', include('orders.urls')),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Media files serving in development
 if settings.DEBUG:

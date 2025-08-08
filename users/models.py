@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import uuid
 
 class UserProfile(models.Model):
     """İstifadəçi profili"""
@@ -94,3 +95,27 @@ class Address(models.Model):
         if self.is_default:
             Address.objects.filter(user=self.user, is_default=True).update(is_default=False)
         super().save(*args, **kwargs)
+
+# users/models.py
+class AnonymousUser(models.Model):
+    device_id = models.CharField(max_length=255, unique=True, verbose_name="Cihaz ID")
+    display_name = models.CharField(max_length=100, default=lambda: f"İstifadəçi {uuid.uuid4().hex[:8].upper()}", verbose_name="Görünən Ad")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaradılma Tarixi")
+    last_activity = models.DateTimeField(auto_now=True, verbose_name="Son Aktivlik")
+    
+    class Meta:
+        verbose_name = "Anonim İstifadəçi"
+        verbose_name_plural = "Anonim İstifadəçilər"
+    
+    def __str__(self):
+        return f"Anonim: {self.display_name or 'Bilinməyən'}"
+    
+    @classmethod
+    def get_or_create_anonymous(cls, device_id):
+        anonymous_user, created = cls.objects.get_or_create(
+            device_id=device_id,
+            defaults={
+                'display_name': f"İstifadəçi {uuid.uuid4().hex[:8].upper()}"
+            }
+        )
+        return anonymous_user

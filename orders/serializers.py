@@ -1,17 +1,28 @@
+# orders/serializers.py
 from rest_framework import serializers
 from .models import Cart, CartItem, Order, OrderItem
 from books.serializers import BookListSerializer
 from users.serializers import AddressSerializer
+from books.models import Book
 
 class CartItemSerializer(serializers.ModelSerializer):
     book = BookListSerializer(read_only=True)
-    book_id = serializers.IntegerField(write_only=True)
+    book_id = serializers.PrimaryKeyRelatedField(
+        queryset=Book.objects.all(),
+        source='book',
+        write_only=True
+    )
     total_price = serializers.ReadOnlyField()
     
     class Meta:
         model = CartItem
         fields = ['id', 'book', 'book_id', 'quantity', 'total_price', 'added_at']
         read_only_fields = ['id', 'added_at']
+    
+    def validate_quantity(self, value):
+        if value < 1:
+            raise serializers.ValidationError("Miqdar 1-dən az ola bilməz")
+        return value
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
@@ -22,6 +33,7 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = ['id', 'items', 'total_price', 'total_items', 'updated_at']
         read_only_fields = ['id', 'updated_at']
+
 
 class OrderItemSerializer(serializers.ModelSerializer):
     book = BookListSerializer(read_only=True)
