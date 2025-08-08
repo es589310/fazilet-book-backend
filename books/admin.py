@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Category, Author, Publisher, Book, BookReview
-from .models import Banner
+from .models import Category, Author, Publisher, Book, BookReview, Banner, SiteSettings
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -73,11 +72,14 @@ class BookAdmin(admin.ModelAdmin):
 
 @admin.register(BookReview)
 class BookReviewAdmin(admin.ModelAdmin):
-    list_display = ['book', 'user', 'rating', 'is_approved', 'created_at']
-    list_filter = ['rating', 'is_approved', 'created_at']
-    search_fields = ['book__title', 'user__username', 'comment']
-    list_editable = ['is_approved']
-    readonly_fields = ['created_at']
+    list_display = ("book", "user_name", "rating", "created_at")
+    list_filter = ("rating", "created_at")
+    search_fields = ("book__title", "comment")
+    readonly_fields = ("created_at",)
+    
+    def user_name(self, obj):
+        return obj.user_name
+    user_name.short_description = "İstifadəçi"
 
 from .models import Banner
 
@@ -85,3 +87,30 @@ from .models import Banner
 class BannerAdmin(admin.ModelAdmin):
     list_display = ("title", "is_active", "created_at")
     list_filter = ("is_active",)
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    list_display = ['site_name', 'phone', 'email', 'copyright_year']
+    fieldsets = (
+        ('Əsas Məlumatlar', {
+            'fields': ('site_name', 'site_description')
+        }),
+        ('Əlaqə Məlumatları', {
+            'fields': ('phone', 'email', 'address', 'working_hours')
+        }),
+        ('Copyright', {
+            'fields': ('copyright_year',)
+        }),
+        ('Sosial Media', {
+            'fields': ('facebook', 'instagram', 'twitter', 'youtube'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def has_add_permission(self, request):
+        # Yalnız bir instance ola bilər
+        return not SiteSettings.objects.exists()
+    
+    def has_delete_permission(self, request, obj=None):
+        # Silməyə icazə vermə
+        return False

@@ -127,32 +127,35 @@ class Book(models.Model):
         return self.reviews.count()
 
 class BookReview(models.Model):
-    """Kitab rəyləri"""
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='reviews', verbose_name="Kitab")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="İstifadəçi")
-    rating = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        verbose_name="Reytinq"
-    )
-    comment = models.TextField(verbose_name="Rəy")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaradılma Tarixi")
-    is_approved = models.BooleanField(default=True, verbose_name="Təsdiqlənmiş")
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='book_reviews')
+    anonymous_user = models.ForeignKey('users.AnonymousUser', on_delete=models.CASCADE, null=True, blank=True, related_name='book_reviews')
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        verbose_name = "Kitab Rəyi"
-        verbose_name_plural = "Kitab Rəyləri"
         ordering = ['-created_at']
-        # unique_together kaldırıldı - kullanıcılar birden fazla rəy yazabilir
     
     def __str__(self):
-        return f"{self.book.title} - {self.user.username} ({self.rating}/5)"
+        user_name = self.user.get_full_name() if self.user else self.anonymous_user.display_name if self.anonymous_user else "Anonim"
+        return f"{user_name} - {self.book.title} - {self.rating}/5"
+    
+    @property
+    def user_name(self):
+        """İstifadəçi adını qaytarır"""
+        if self.user:
+            return self.user.get_full_name() or self.user.username
+        elif self.anonymous_user:
+            return self.anonymous_user.display_name
+        return "Anonim İstifadəçi"
 
 from django.db import models
 
 class Banner(models.Model):
     title = models.CharField(max_length=200, verbose_name="Başlıq")
     subtitle = models.CharField(max_length=300, blank=True, verbose_name="Alt başlıq")
-    image = models.ImageField(upload_to='banners/', verbose_name="Şəkil")
+    image = models.ImageField(upload_to='banners/', blank=True, null=True, verbose_name="Şəkil")
     link = models.URLField(blank=True, verbose_name="Link")
     is_active = models.BooleanField(default=True, verbose_name="Aktiv")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -163,3 +166,30 @@ class Banner(models.Model):
 
     def __str__(self):
         return self.title
+
+class SiteSettings(models.Model):
+    """Sayt tənzimləmələri"""
+    site_name = models.CharField(max_length=200, default="Fəzilət Kitab", verbose_name="Sayt Adı")
+    site_description = models.TextField(default="Azərbaycanda ən böyük onlayn kitab mağazası. Minlərlə kitab, ən yaxşı qiymətlər və sürətli çatdırılma xidməti.", verbose_name="Sayt Təsviri")
+    phone = models.CharField(max_length=20, default="+994 12 345 67 89", verbose_name="Telefon")
+    email = models.EmailField(default="info@faziletkitab.az", verbose_name="E-mail")
+    address = models.TextField(blank=True, verbose_name="Ünvan")
+    working_hours = models.CharField(max_length=100, default="Bazar ertəsi - Cümə: 09:00-18:00", verbose_name="İş Saatları")
+    copyright_year = models.IntegerField(default=2024, verbose_name="Copyright İli")
+    facebook = models.URLField(blank=True, verbose_name="Facebook")
+    instagram = models.URLField(blank=True, verbose_name="Instagram")
+    twitter = models.URLField(blank=True, verbose_name="Twitter")
+    youtube = models.URLField(blank=True, verbose_name="YouTube")
+    
+    class Meta:
+        verbose_name = "Sayt Tənzimləməsi"
+        verbose_name_plural = "Sayt Tənzimləmələri"
+    
+    def __str__(self):
+        return f"Sayt Tənzimləmələri"
+    
+    @classmethod
+    def get_settings(cls):
+        """Tək instance qaytarır"""
+        settings, created = cls.objects.get_or_create(id=1)
+        return settings

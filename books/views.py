@@ -3,16 +3,16 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
-from .models import Category, Book, BookReview
-from .serializers import CategorySerializer, BookListSerializer, BookDetailSerializer, BookReviewSerializer
+from .models import Category, Book, BookReview, Banner, SiteSettings
+from .serializers import CategorySerializer, BookListSerializer, BookDetailSerializer, BookReviewSerializer, BannerSerializer, SiteSettingsSerializer
 from .filters import BookFilter
 from rest_framework import generics, filters, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Banner
-from .serializers import BannerSerializer
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from users.models import AnonymousUser
+import uuid
 
 class CategoryListView(generics.ListAPIView):
     """Kateqoriyalar siyahısı"""
@@ -59,31 +59,38 @@ class NewBooksView(generics.ListAPIView):
     serializer_class = BookListSerializer
 
 class BookReviewListView(generics.ListCreateAPIView):
+    """Kitab rəyləri"""
     serializer_class = BookReviewSerializer
-
-    def get_permissions(self):
-        if self.request.method == 'POST':
-            return [IsAuthenticated()]
-        return [AllowAny()]
-
+    permission_classes = [AllowAny]
+    
     def get_queryset(self):
-        book_id = self.kwargs['pk']
-        return BookReview.objects.filter(book_id=book_id, is_approved=True).select_related('user')
-
+        book_id = self.kwargs.get('pk')
+        return BookReview.objects.filter(book_id=book_id).select_related('user', 'anonymous_user')
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [AllowAny()]  # POST üçün də AllowAny
+    
     def perform_create(self, serializer):
-        book_id = self.kwargs['pk']
-        review = serializer.save(
-            book_id=book_id,
-            user=self.request.user
-        )
+        book_id = self.kwargs.get('pk')
+        book = Book.objects.get(id=book_id)
+        
+        # Anonymous user yaradır və ya mövcud olanı tapır
+        device_id = self.request.META.get('HTTP_X_DEVICE_ID')
+        if not device_id:
+            device_id = str(uuid.uuid4())
+        
+        anonymous_user = AnonymousUser.get_or_create_anonymous(device_id)
+        self.request.anonymous_user = anonymous_user
+        
+        review = serializer.save(book=book)
         return review
-
+    
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        review = self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=201, headers=headers)
+        response = super().create(request, *args, **kwargs)
+        response.status_code = 201
+        return response
 
 
 @api_view(['GET'])
@@ -104,3 +111,11 @@ def book_stats(request):
 class BannerListView(ListAPIView):
     queryset = Banner.objects.filter(is_active=True)
     serializer_class = BannerSerializer
+
+class SiteSettingsView(RetrieveAPIView):
+    """Sayt tənzimləmələri"""
+    serializer_class = SiteSettingsSerializer
+    permission_classes = [AllowAny]
+    
+    def get_object(self):
+        return SiteSettings.get_settings()
