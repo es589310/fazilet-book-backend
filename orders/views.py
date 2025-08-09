@@ -15,6 +15,11 @@ class CartView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CartSerializer
     permission_classes = [AllowAny]
     
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
     def get_object(self):
         device_id = self.request.META.get('HTTP_X_DEVICE_ID', str(uuid.uuid4()))
         anonymous_user = AnonymousUser.get_or_create_anonymous(device_id)
@@ -32,6 +37,11 @@ class AddToCartView(generics.CreateAPIView):
     """Səbətə əlavə etmə"""
     serializer_class = CartItemSerializer
     permission_classes = [AllowAny]
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -133,3 +143,27 @@ def remove_cart_item(request, item_id):
     cart_item.delete()
     
     return Response({'message': 'Məhsul səbətdən silindi!'})
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def clear_cart(request):
+    """Səbəti tamamilə təmizlə"""
+    # Device ID-ni al
+    device_id = request.META.get('HTTP_X_DEVICE_ID')
+    if not device_id:
+        device_id = str(uuid.uuid4())
+    
+    # Anonymous user yaradır və ya mövcud olanı tapır
+    anonymous_user = AnonymousUser.get_or_create_anonymous(device_id)
+    
+    # Cart-i tap və bütün item-ləri sil
+    if request.user.is_authenticated:
+        cart = Cart.objects.filter(user=request.user).first()
+    else:
+        cart = Cart.objects.filter(anonymous_user=anonymous_user).first()
+    
+    if cart:
+        cart.items.all().delete()
+        return Response({'message': 'Səbət təmizləndi!'})
+    
+    return Response({'message': 'Səbət artıq boşdur!'})

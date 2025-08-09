@@ -53,7 +53,12 @@ class CartItem(models.Model):
         unique_together = ['cart', 'book']
     
     def __str__(self):
-        return f"{self.cart.user.username} - {self.book.title} ({self.quantity})"
+        user_info = "Anonim"
+        if self.cart.user:
+            user_info = self.cart.user.username
+        elif self.cart.anonymous_user:
+            user_info = self.cart.anonymous_user.display_name
+        return f"{user_info} - {self.book.title} ({self.quantity})"
     
     @property
     def total_price(self):
