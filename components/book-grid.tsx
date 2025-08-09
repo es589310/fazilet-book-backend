@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -8,114 +8,106 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Star, ShoppingCart } from "lucide-react"
 import { useCart } from "@/contexts/cart-context"
-
-const allBooks = [
-  {
-    id: 5,
-    title: "Harri Potter və Fəlsəfə Daşı",
-    author: "J.K. Rowling",
-    price: 16.99,
-    originalPrice: 21.99,
-    rating: 4.9,
-    reviews: 5432,
-    category: "Fantastika",
-    image: "/placeholder.svg?height=300&width=200",
-  },
-  {
-    id: 6,
-    title: "Cinayət və Cəza",
-    author: "Fyodor Dostoyevski",
-    price: 13.99,
-    originalPrice: 17.99,
-    rating: 4.7,
-    reviews: 2341,
-    category: "Klassik",
-    image: "/placeholder.svg?height=300&width=200",
-  },
-  {
-    id: 7,
-    title: "Dune",
-    author: "Frank Herbert",
-    price: 19.99,
-    originalPrice: 25.99,
-    rating: 4.8,
-    reviews: 3456,
-    category: "Elmi-Fantastik",
-    image: "/placeholder.svg?height=300&width=200",
-  },
-  {
-    id: 8,
-    title: "Yüz İl Tənhalıq",
-    author: "Gabriel García Márquez",
-    price: 15.99,
-    originalPrice: 19.99,
-    rating: 4.6,
-    reviews: 1876,
-    category: "Ədəbiyyat",
-    image: "/placeholder.svg?height=300&width=200",
-  },
-  {
-    id: 9,
-    title: "Sapiens",
-    author: "Yuval Noah Harari",
-    price: 17.99,
-    originalPrice: 22.99,
-    rating: 4.8,
-    reviews: 4321,
-    category: "Tarix",
-    image: "/placeholder.svg?height=300&width=200",
-  },
-  {
-    id: 10,
-    title: "Atomic Habits",
-    author: "James Clear",
-    price: 14.99,
-    originalPrice: 18.99,
-    rating: 4.9,
-    reviews: 6789,
-    category: "Özünü İnkişaf",
-    image: "/placeholder.svg?height=300&width=200",
-  },
-]
-
-const categories = ["Hamısı", "Fantastika", "Klassik", "Elmi-Fantastik", "Ədəbiyyat", "Tarix", "Özünü İnkişaf"]
+import { fetchBooks, fetchCategories, type Book, type Category } from "@/lib/api"
 
 export function BookGrid() {
-  const [selectedCategory, setSelectedCategory] = useState("Hamısı")
-  const [sortBy, setSortBy] = useState("popularity")
+  const [books, setBooks] = useState<Book[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string>("")
+  const [sortBy, setSortBy] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { addItem } = useCart()
 
-  const filteredBooks = allBooks.filter((book) => {
-    const matchesCategory = selectedCategory === "Hamısı" || book.category === selectedCategory
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true)
+        const [booksResponse, categoriesResponse] = await Promise.all([
+          fetchBooks(),
+          fetchCategories()
+        ])
+        setBooks(booksResponse.results)
+        setCategories(categoriesResponse)
+        setError(null)
+      } catch (err) {
+        setError('Kitablar yüklənərkən xəta baş verdi')
+        console.error('Error fetching data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
+
+  // Filter books based on search and category
+  const filteredBooks = books.filter((book) => {
+    const matchesCategory = !selectedCategory || book.category.name === selectedCategory
     const matchesSearch =
       book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchTerm.toLowerCase())
+      book.authors.some(author => author.name.toLowerCase().includes(searchTerm.toLowerCase()))
     return matchesCategory && matchesSearch
   })
 
+  // Sort books
   const sortedBooks = [...filteredBooks].sort((a, b) => {
     switch (sortBy) {
       case "price-low":
-        return a.price - b.price
+        return parseFloat(a.price) - parseFloat(b.price)
       case "price-high":
-        return b.price - a.price
+        return parseFloat(b.price) - parseFloat(a.price)
       case "rating":
-        return b.rating - a.rating
+        return b.average_rating - a.average_rating
+      case "views":
+        return b.stock_quantity - a.stock_quantity // Using stock as popularity proxy
       default:
-        return b.reviews - a.reviews
+        return b.reviews_count - a.reviews_count
     }
   })
 
-  const handleAddToCart = (book: (typeof allBooks)[0]) => {
+  const handleAddToCart = (book: Book) => {
     addItem({
       id: book.id,
       title: book.title,
-      author: book.author,
-      price: book.price,
-      image: book.image,
+      author: book.authors[0]?.name || 'Naməlum müəllif',
+      price: parseFloat(book.price),
+      image: book.cover_image,
       quantity: 1,
     })
+  }
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Bütün Kitablar</h2>
+            <p className="text-lg text-gray-600">Geniş kitab kolleksiyamızı araşdırın</p>
+          </div>
+          <div className="text-center">
+            <p className="text-gray-500">Yüklənir...</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (error) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Bütün Kitablar</h2>
+            <p className="text-lg text-gray-600">Geniş kitab kolleksiyamızı araşdırın</p>
+          </div>
+          <div className="text-center">
+            <p className="text-red-500">{error}</p>
+          </div>
+        </div>
+      </section>
+    )
   }
 
   return (
@@ -141,9 +133,10 @@ export function BookGrid() {
               <SelectValue placeholder="Kateqoriya" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">Hamısı</SelectItem>
               {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
+                <SelectItem key={category.id} value={category.name}>
+                  {category.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -168,41 +161,53 @@ export function BookGrid() {
               <CardContent className="p-4">
                 <div className="relative mb-4">
                   <img
-                    src={book.image || "/placeholder.svg"}
+                    src={book.cover_image || "/placeholder.svg"}
                     alt={book.title}
                     className="w-full h-64 object-cover rounded-lg"
                   />
                   <Badge className="absolute top-2 left-2" variant="secondary">
-                    {book.category}
+                    {book.category.name}
                   </Badge>
                 </div>
 
                 <h3 className="font-semibold text-lg mb-1 line-clamp-2">{book.title}</h3>
-                <p className="text-gray-600 text-sm mb-2">{book.author}</p>
+                <p className="text-gray-600 text-sm mb-2">
+                  {book.authors.map(author => author.name).join(', ')}
+                </p>
 
                 <div className="flex items-center mb-3">
                   <div className="flex text-yellow-400">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className={`h-4 w-4 ${i < Math.floor(book.rating) ? "fill-current" : ""}`} />
+                      <Star 
+                        key={i} 
+                        className={`h-4 w-4 ${i < Math.floor(book.average_rating) ? "fill-current" : ""}`} 
+                      />
                     ))}
                   </div>
                   <span className="ml-2 text-sm text-gray-600">
-                    {book.rating} ({book.reviews})
+                    {book.average_rating.toFixed(1)} ({book.reviews_count})
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
-                    <span className="text-lg font-bold text-green-600">${book.price}</span>
-                    {book.originalPrice && (
-                      <span className="text-sm text-gray-500 line-through">${book.originalPrice}</span>
+                    <span className="text-lg font-bold text-green-600">₼{book.price}</span>
+                    {book.original_price && (
+                      <span className="text-sm text-gray-500 line-through">₼{book.original_price}</span>
                     )}
                   </div>
+                  {book.discount_percentage > 0 && (
+                    <Badge variant="destructive">-{book.discount_percentage}%</Badge>
+                  )}
                 </div>
 
-                <Button className="w-full" onClick={() => handleAddToCart(book)}>
+                <Button 
+                  className="w-full" 
+                  onClick={() => handleAddToCart(book)}
+                  disabled={book.stock_quantity === 0}
+                >
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Səbətə At
+                  {book.stock_quantity === 0 ? 'Stokda Yoxdur' : 'Səbətə At'}
                 </Button>
               </CardContent>
             </Card>

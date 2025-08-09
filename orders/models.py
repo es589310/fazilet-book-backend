@@ -5,17 +5,30 @@ from users.models import Address
 from decimal import Decimal
 
 class Cart(models.Model):
-    """Alış-veriş səbəti"""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart', verbose_name="İstifadəçi")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaradılma Tarixi")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Yenilənmə Tarixi")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='carts')
+    anonymous_user = models.ForeignKey('users.AnonymousUser', on_delete=models.CASCADE, null=True, blank=True, related_name='carts')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         verbose_name = "Səbət"
         verbose_name_plural = "Səbətlər"
     
     def __str__(self):
-        return f"{self.user.username} - Səbət"
+        if self.user:
+            return f"Səbət - {self.user.username}"
+        elif self.anonymous_user:
+            return f"Səbət - {self.anonymous_user.display_name}"
+        return "Anonim Səbət"
+    
+    @property
+    def user_identifier(self):
+        """İstifadəçi identifikatorunu qaytarır"""
+        if self.user:
+            return f"user_{self.user.id}"
+        elif self.anonymous_user:
+            return f"anonymous_{self.anonymous_user.device_id}"
+        return None
     
     @property
     def total_price(self):
@@ -40,7 +53,12 @@ class CartItem(models.Model):
         unique_together = ['cart', 'book']
     
     def __str__(self):
-        return f"{self.cart.user.username} - {self.book.title} ({self.quantity})"
+        user_info = "Anonim"
+        if self.cart.user:
+            user_info = self.cart.user.username
+        elif self.cart.anonymous_user:
+            user_info = self.cart.anonymous_user.display_name
+        return f"{user_info} - {self.book.title} ({self.quantity})"
     
     @property
     def total_price(self):

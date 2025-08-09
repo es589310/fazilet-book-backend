@@ -6,13 +6,38 @@ class CartItemInline(admin.TabularInline):
     model = CartItem
     extra = 0
     readonly_fields = ['added_at', 'total_price']
+    fields = ['book', 'quantity', 'total_price', 'added_at']
+
+@admin.register(CartItem)
+class CartItemAdmin(admin.ModelAdmin):
+    list_display = ['cart_identifier', 'book', 'quantity', 'total_price', 'added_at']
+    list_filter = ['added_at']
+    search_fields = ['book__title', 'cart__user__username', 'cart__anonymous_user__display_name']
+    readonly_fields = ['added_at', 'total_price']
+    
+    def cart_identifier(self, obj):
+        if obj.cart.user:
+            return f"İstifadəçi: {obj.cart.user.username}"
+        elif obj.cart.anonymous_user:
+            return f"Anonim: {obj.cart.anonymous_user.display_name}"
+        return "Anonim Səbət"
+    cart_identifier.short_description = "Səbət"
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ['user', 'total_items', 'total_price', 'updated_at']
-    search_fields = ['user__username', 'user__email']
+    list_display = ['user_identifier', 'total_items', 'total_price', 'updated_at']
+    list_filter = ['updated_at']
+    search_fields = ['user__username', 'user__email', 'anonymous_user__display_name']
     inlines = [CartItemInline]
-    readonly_fields = ['total_items', 'total_price']
+    readonly_fields = ['total_items', 'total_price', 'user_identifier']
+    
+    def user_identifier(self, obj):
+        if obj.user:
+            return f"İstifadəçi: {obj.user.username}"
+        elif obj.anonymous_user:
+            return f"Anonim: {obj.anonymous_user.display_name}"
+        return "Anonim Səbət"
+    user_identifier.short_description = "İstifadəçi"
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
