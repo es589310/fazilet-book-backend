@@ -28,12 +28,22 @@ class BookListView(generics.ListAPIView):
     search_fields = ['title', 'authors__name', 'description']
     ordering_fields = ['price', 'created_at', 'sales_count', 'views_count']
     ordering = ['-created_at']
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 class BookDetailView(generics.RetrieveAPIView):
     """Kitab detalları"""
     queryset = Book.objects.filter(is_active=True).select_related('category', 'publisher').prefetch_related('authors', 'reviews__user')
     serializer_class = BookDetailSerializer
     lookup_field = 'slug'
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
     
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -47,16 +57,31 @@ class FeaturedBooksView(generics.ListAPIView):
     """Seçilmiş kitablar"""
     queryset = Book.objects.filter(is_active=True, is_featured=True).select_related('category').prefetch_related('authors')
     serializer_class = BookListSerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 class BestsellerBooksView(generics.ListAPIView):
     """Bestseller kitablar"""
     queryset = Book.objects.filter(is_active=True, is_bestseller=True).select_related('category').prefetch_related('authors')
     serializer_class = BookListSerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 class NewBooksView(generics.ListAPIView):
     """Yeni kitablar"""
     queryset = Book.objects.filter(is_active=True, is_new=True).select_related('category').prefetch_related('authors')
     serializer_class = BookListSerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 class BookReviewListView(generics.ListCreateAPIView):
     """Kitab rəyləri"""
@@ -119,3 +144,11 @@ class SiteSettingsView(RetrieveAPIView):
     
     def get_object(self):
         return SiteSettings.get_settings()
+
+@api_view(['GET'])
+def whatsapp_number(request):
+    """WhatsApp nömrəsini qaytarır"""
+    settings = SiteSettings.get_settings()
+    return Response({
+        'whatsapp_number': settings.whatsapp_number
+    })

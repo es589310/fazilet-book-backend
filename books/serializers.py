@@ -47,6 +47,7 @@ class BookListSerializer(serializers.ModelSerializer):
     average_rating = serializers.ReadOnlyField()
     reviews_count = serializers.ReadOnlyField()
     discount_percentage = serializers.ReadOnlyField()
+    cover_image = serializers.SerializerMethodField()
     
     class Meta:
         model = Book
@@ -55,6 +56,14 @@ class BookListSerializer(serializers.ModelSerializer):
             'cover_image', 'is_featured', 'is_bestseller', 'is_new',
             'average_rating', 'reviews_count', 'discount_percentage', 'stock_quantity'
         ]
+    
+    def get_cover_image(self, obj):
+        if obj.cover_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.cover_image.url)
+            return obj.cover_image.url
+        return None
 
 class BookDetailSerializer(serializers.ModelSerializer):
     """Kitab detalları üçün tam serializer"""
@@ -65,6 +74,8 @@ class BookDetailSerializer(serializers.ModelSerializer):
     average_rating = serializers.ReadOnlyField()
     reviews_count = serializers.ReadOnlyField()
     discount_percentage = serializers.ReadOnlyField()
+    cover_image = serializers.SerializerMethodField()
+    back_image = serializers.SerializerMethodField()
     
     class Meta:
         model = Book
@@ -77,6 +88,22 @@ class BookDetailSerializer(serializers.ModelSerializer):
             'views_count', 'sales_count', 'created_at',
             'average_rating', 'reviews_count', 'discount_percentage', 'reviews'
         ]
+    
+    def get_cover_image(self, obj):
+        if obj.cover_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.cover_image.url)
+            return obj.cover_image.url
+        return None
+    
+    def get_back_image(self, obj):
+        if obj.back_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.back_image.url)
+            return obj.back_image.url
+        return None
 
 from .models import Banner
 

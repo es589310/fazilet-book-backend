@@ -6,7 +6,7 @@ from users.serializers import AddressSerializer
 from books.models import Book
 
 class CartItemSerializer(serializers.ModelSerializer):
-    book = BookListSerializer(read_only=True)
+    book = serializers.SerializerMethodField()
     book_id = serializers.PrimaryKeyRelatedField(
         queryset=Book.objects.all(),
         source='book',
@@ -18,6 +18,9 @@ class CartItemSerializer(serializers.ModelSerializer):
         model = CartItem
         fields = ['id', 'book', 'book_id', 'quantity', 'total_price', 'added_at']
         read_only_fields = ['id', 'added_at']
+    
+    def get_book(self, obj):
+        return BookListSerializer(obj.book, context=self.context).data
     
     def validate_quantity(self, value):
         if value < 1:

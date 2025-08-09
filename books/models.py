@@ -180,6 +180,7 @@ class SiteSettings(models.Model):
     instagram = models.URLField(blank=True, verbose_name="Instagram")
     twitter = models.URLField(blank=True, verbose_name="Twitter")
     youtube = models.URLField(blank=True, verbose_name="YouTube")
+    whatsapp_number = models.CharField(max_length=20, default="+994501234567", verbose_name="WhatsApp Nömrəsi")
     
     class Meta:
         verbose_name = "Sayt Tənzimləməsi"

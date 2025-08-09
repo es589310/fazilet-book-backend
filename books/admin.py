@@ -90,13 +90,13 @@ class BannerAdmin(admin.ModelAdmin):
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ['site_name', 'phone', 'email', 'copyright_year']
+    list_display = ['site_name', 'phone', 'email', 'whatsapp_number', 'copyright_year']
     fieldsets = (
         ('Əsas Məlumatlar', {
             'fields': ('site_name', 'site_description')
         }),
         ('Əlaqə Məlumatları', {
-            'fields': ('phone', 'email', 'address', 'working_hours')
+            'fields': ('phone', 'email', 'address', 'working_hours', 'whatsapp_number')
         }),
         ('Copyright', {
             'fields': ('copyright_year',)
