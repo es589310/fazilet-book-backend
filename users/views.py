@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from .models import Address
 from .serializers import UserSerializer, UserRegistrationSerializer, AddressSerializer
+from lib.email_utils import send_welcome_email
 
 class RegisterView(generics.CreateAPIView):
     """İstifadəçi qeydiyyatı"""
@@ -18,6 +19,13 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
+        # Xoş gəlmə emaili göndəririk
+        try:
+            send_welcome_email(user)
+        except Exception as e:
+            print(f"⚠️ Email göndərilmədi: {str(e)}")
+            # Email göndərilməsə də qeydiyyat uğurlu olur
+        
         # JWT token yaradırıq
         refresh = RefreshToken.for_user(user)
         
@@ -26,7 +34,8 @@ class RegisterView(generics.CreateAPIView):
             'tokens': {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
-            }
+            },
+            'message': 'Qeydiyyat uğurla tamamlandı! Xoş gəlmə emaili göndərildi.'
         }, status=status.HTTP_201_CREATED)
 
 @api_view(['POST'])

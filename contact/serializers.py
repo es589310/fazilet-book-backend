@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ContactMessage
+from .models import ContactMessage, SocialMediaLink
 
 class ContactMessageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,4 +33,15 @@ class ContactMessageSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("E-mail tələb olunur")
         
         logger.info(f"Serializer validate - Validation passed")
-        return data 
+        return data
+
+
+class SocialMediaLinkSerializer(serializers.ModelSerializer):
+    icon_class = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = SocialMediaLink
+        fields = ['platform', 'url', 'icon_class', 'is_active', 'is_hidden', 'order']
+    
+    def get_icon_class(self, obj):
+        return obj.get_icon_class() 

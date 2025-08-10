@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImageKit Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-form {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .image-preview {
+            max-width: 300px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>ImageKit Test Səhifəsi</h1>
+    
+    <div class="upload-form">
+        <h3>Şəkil Yüklə</h3>
+        <form id="uploadForm">
+            <input type="file" id="imageFile" accept="image/*" required>
+            <br><br>
+            <select id="folderSelect">
+                <option value="books/covers">Kitab Üz Qabığı</option>
+                <option value="books/backs">Kitab Arxa Qabığı</option>
+                <option value="categories">Kateqoriya</option>
+                <option value="authors">Müəllif</option>
+                <option value="banners">Banner</option>
+                <option value="general">Ümumi</option>
+            </select>
+            <br><br>
+            <button type="submit">Şəkli Yüklə</button>
+        </form>
+    </div>
+    
+    <div id="result"></div>
+    
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const imageFile = document.getElementById('imageFile').files[0];
+            const folder = document.getElementById('folderSelect').value;
+            
+            if (!imageFile) {
+                showResult('Zəhmət olmasa şəkil seçin', 'error');
+                return;
+            }
+            
+            formData.append('image', imageFile);
+            formData.append('folder', folder);
+            
+            try {
+                const response = await fetch('/api/books/upload-image/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult(`
+                        <h4>Şəkil uğurla yükləndi!</h4>
+                        <p><strong>URL:</strong> <a href="${result.url}" target="_blank">${result.url}</a></p>
+                        <p><strong>Fayl ID:</strong> ${result.file_id}</p>
+                        <p><strong>Ad:</strong> ${result.filename}</p>
+                        <p><strong>Ölçü:</strong> ${result.size} bytes</p>
+                        <p><strong>En:</strong> ${result.width}px, <strong>Hündürlük:</strong> ${result.height}px</p>
+                        <img src="${result.url}" alt="Yüklənən şəkil" class="image-preview">
+                    `, 'success');
+                } else {
+                    showResult(`Xəta: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`Xəta: ${error.message}`, 'error');
+            }
+        });
+        
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = message;
+            resultDiv.className = `result ${type}`;
+        }
+    </script>
+</body>
+</html> 

@@ -99,7 +99,7 @@ class Address(models.Model):
 # users/models.py
 class AnonymousUser(models.Model):
     device_id = models.CharField(max_length=255, unique=True, verbose_name="Cihaz ID")
-    display_name = models.CharField(max_length=100, default=lambda: f"İstifadəçi {uuid.uuid4().hex[:8].upper()}", verbose_name="Görünən Ad")
+    display_name = models.CharField(max_length=100, default="", verbose_name="Görünən Ad")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaradılma Tarixi")
     last_activity = models.DateTimeField(auto_now=True, verbose_name="Son Aktivlik")
     

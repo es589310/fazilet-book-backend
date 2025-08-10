@@ -55,7 +55,7 @@ ROOT_URLCONF = 'kitab_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -185,9 +185,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='your-email@gmail.com')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='your-app-password')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@faziletkitab.az')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='panahovemin10@gmail.com')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='csacstjcyxstized')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='panahovemin10@gmail.com')
 ADMIN_EMAIL = config('ADMIN_EMAIL', default='admin@faziletkitab.az')
 
 # Email timeout (saniyə)
@@ -197,6 +197,23 @@ EMAIL_TIMEOUT = 10
 # Real email göndərmək üçün bu sətri comment edin
 # if DEBUG:
 #     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# ImageKit Configuration
+IMAGEKIT_PUBLIC_KEY = 'public_XkJMchYM6d4lYKOQlBvFmFY5jqs='
+IMAGEKIT_PRIVATE_KEY = 'private_t57buG/tbcXO31ClG09vQJazIK0='
+IMAGEKIT_URL_ENDPOINT = 'https://ik.imagekit.io/dostumkitab/'
+IMAGEKIT_FOLDER = 'dostumkitab'
+
+# Media files configuration
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Static files configuration
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 # kitab_backend/settings.py
 LOGGING = {

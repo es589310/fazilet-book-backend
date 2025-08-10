@@ -152,3 +152,46 @@ def whatsapp_number(request):
     return Response({
         'whatsapp_number': settings.whatsapp_number
     })
+
+@api_view(['POST'])
+def upload_image_to_imagekit(request):
+    """Şəkli ImageKit-ə yükləyir"""
+    try:
+        if 'image' not in request.FILES:
+            return Response({
+                'success': False,
+                'error': 'Şəkil faylı tələb olunur'
+            }, status=400)
+        
+        image_file = request.FILES['image']
+        folder_path = request.POST.get('folder', 'general')
+        filename = request.POST.get('filename', None)
+        
+        from lib.imagekit_utils import imagekit_manager
+        result = imagekit_manager.upload_image(
+            image_file, 
+            folder_path=folder_path,
+            filename=filename
+        )
+        
+        if result['success']:
+            return Response({
+                'success': True,
+                'url': result['url'],
+                'file_id': result['file_id'],
+                'filename': result['filename'],
+                'size': result['size'],
+                'width': result['width'],
+                'height': result['height']
+            })
+        else:
+            return Response({
+                'success': False,
+                'error': result['error']
+            }, status=500)
+            
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=500)

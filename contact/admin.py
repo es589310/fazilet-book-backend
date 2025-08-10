@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ContactMessage
+from .models import ContactMessage, SocialMediaLink
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(admin.ModelAdmin):
@@ -31,3 +31,28 @@ class ContactMessageAdmin(admin.ModelAdmin):
     def sender_email(self, obj):
         return obj.sender_email
     sender_email.short_description = "E-mail"
+
+
+@admin.register(SocialMediaLink)
+class SocialMediaLinkAdmin(admin.ModelAdmin):
+    list_display = ['platform', 'url', 'is_active', 'is_hidden', 'order', 'created_at']
+    list_filter = ['platform', 'is_active', 'is_hidden', 'created_at']
+    list_editable = ['is_active', 'is_hidden', 'order']
+    search_fields = ['platform', 'url']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Əsas məlumatlar', {
+            'fields': ('platform', 'url', 'icon_class')
+        }),
+        ('Status', {
+            'fields': ('is_active', 'is_hidden', 'order')
+        }),
+        ('Tarix məlumatları', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).order_by('order', 'platform')

@@ -8,6 +8,8 @@ class Category(models.Model):
     slug = models.SlugField(unique=True, verbose_name="URL Slug")
     description = models.TextField(blank=True, verbose_name="Təsvir")
     image = models.ImageField(upload_to='categories/', blank=True, null=True, verbose_name="Şəkil")
+    imagekit_url = models.URLField(blank=True, null=True, verbose_name="ImageKit URL")
+    imagekit_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="ImageKit ID")
     is_active = models.BooleanField(default=True, verbose_name="Aktiv")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaradılma Tarixi")
     
@@ -26,6 +28,8 @@ class Author(models.Model):
     birth_date = models.DateField(blank=True, null=True, verbose_name="Doğum Tarixi")
     death_date = models.DateField(blank=True, null=True, verbose_name="Vəfat Tarixi")
     photo = models.ImageField(upload_to='authors/', blank=True, null=True, verbose_name="Foto")
+    photo_imagekit_url = models.URLField(blank=True, null=True, verbose_name="Foto ImageKit URL")
+    photo_imagekit_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Foto ImageKit ID")
     nationality = models.CharField(max_length=100, blank=True, verbose_name="Milliyyət")
     
     class Meta:
@@ -86,6 +90,12 @@ class Book(models.Model):
     cover_image = models.ImageField(upload_to='books/covers/', verbose_name="Üz qabığı")
     back_image = models.ImageField(upload_to='books/backs/', blank=True, null=True, verbose_name="Arxa qabıq")
     
+    # ImageKit URL-ləri
+    cover_imagekit_url = models.URLField(blank=True, null=True, verbose_name="Üz qabığı ImageKit URL")
+    back_imagekit_url = models.URLField(blank=True, null=True, verbose_name="Arxa qabıq ImageKit URL")
+    cover_imagekit_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Üz qabığı ImageKit ID")
+    back_imagekit_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Arxa qabıq ImageKit ID")
+    
     # Status və reytinq
     is_active = models.BooleanField(default=True, verbose_name="Aktiv")
     is_featured = models.BooleanField(default=False, verbose_name="Seçilmiş")
@@ -105,6 +115,30 @@ class Book(models.Model):
     
     def __str__(self):
         return self.title
+    
+    def get_cover_image_url(self):
+        """Üz qabığı şəklinin URL-ni qaytarır"""
+        if self.cover_imagekit_url:
+            return self.cover_imagekit_url
+        elif self.cover_image:
+            return self.cover_image.url
+        return None
+    
+    def get_back_image_url(self):
+        """Arxa qabıq şəklinin URL-ni qaytarır"""
+        if self.back_imagekit_url:
+            return self.back_imagekit_url
+        elif self.back_image:
+            return self.back_image.url
+        return None
+    
+    def get_optimized_cover_url(self, width=None, height=None, quality=80):
+        """Optimizasiya edilmiş üz qabığı URL-ni qaytarır"""
+        if self.cover_imagekit_url:
+            from lib.imagekit_utils import imagekit_manager
+            filename = self.cover_imagekit_url.split('/')[-1]
+            return imagekit_manager.optimize_image_url(filename, width, height, quality)
+        return self.get_cover_image_url()
     
     @property
     def discount_percentage(self):
@@ -156,6 +190,8 @@ class Banner(models.Model):
     title = models.CharField(max_length=200, verbose_name="Başlıq")
     subtitle = models.CharField(max_length=300, blank=True, verbose_name="Alt başlıq")
     image = models.ImageField(upload_to='banners/', blank=True, null=True, verbose_name="Şəkil")
+    imagekit_url = models.URLField(blank=True, null=True, verbose_name="ImageKit URL")
+    imagekit_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="ImageKit ID")
     link = models.URLField(blank=True, verbose_name="Link")
     is_active = models.BooleanField(default=True, verbose_name="Aktiv")
     created_at = models.DateTimeField(auto_now_add=True)

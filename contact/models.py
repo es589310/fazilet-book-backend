@@ -53,3 +53,48 @@ class ContactMessage(models.Model):
         if self.user:
             return self.user.email
         return self.email
+
+
+class SocialMediaLink(models.Model):
+    """Sosial media linkləri üçün model"""
+    PLATFORM_CHOICES = (
+        ('facebook', 'Facebook'),
+        ('instagram', 'Instagram'),
+        ('twitter', 'Twitter'),
+        ('youtube', 'YouTube'),
+        ('linkedin', 'LinkedIn'),
+        ('telegram', 'Telegram'),
+    )
+    
+    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES, verbose_name="Platforma")
+    url = models.URLField(verbose_name="Link")
+    icon_class = models.CharField(max_length=100, blank=True, verbose_name="İkon CSS sinifi")
+    is_active = models.BooleanField(default=True, verbose_name="Aktiv")
+    is_hidden = models.BooleanField(default=False, verbose_name="Gizlət")
+    order = models.PositiveIntegerField(default=0, verbose_name="Sıra")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaradılma tarixi")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Yenilənmə tarixi")
+    
+    class Meta:
+        verbose_name = "Sosial media linki"
+        verbose_name_plural = "Sosial media linkləri"
+        ordering = ['order', 'platform']
+        unique_together = ['platform']
+    
+    def __str__(self):
+        return f"{self.get_platform_display()} - {self.url}"
+    
+    def get_icon_class(self):
+        """Platforma üçün default ikon sinifini qaytarır"""
+        if self.icon_class:
+            return self.icon_class
+        
+        icon_map = {
+            'facebook': 'fab fa-facebook-f',
+            'instagram': 'fab fa-instagram',
+            'twitter': 'fab fa-twitter',
+            'youtube': 'fab fa-youtube',
+            'linkedin': 'fab fa-linkedin-in',
+            'telegram': 'fab fa-telegram-plane',
+        }
+        return icon_map.get(self.platform, 'fas fa-link')

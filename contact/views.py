@@ -5,8 +5,9 @@ from rest_framework.response import Response
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from .models import ContactMessage
-from .serializers import ContactMessageSerializer
+from .models import ContactMessage, SocialMediaLink
+from .serializers import ContactMessageSerializer, SocialMediaLinkSerializer
+from lib.email_utils import send_contact_email
 import logging
 
 logger = logging.getLogger(__name__)
@@ -66,8 +67,14 @@ def send_contact_message(request):
                 contact_message.auto_reply_date = timezone.now()
                 contact_message.save()
             
+            # Response mesajını istifadəçi statusuna görə təyin edirik
+            if request.user.is_authenticated:
+                response_message = "Dəyərli istifadəçi müraciətiniz qeydə alındı"
+            else:
+                response_message = "Mesajınız uğurla göndərildi. Tezliklə sizinlə əlaqə saxlayacağıq."
+            
             return Response({
-                'message': 'Mesajınız uğurla göndərildi. Tezliklə sizinlə əlaqə saxlayacağıq.',
+                'message': response_message,
                 'success': True
             }, status=status.HTTP_201_CREATED)
         else:
@@ -89,38 +96,23 @@ def send_admin_notification(contact_message):
     Admin-ə bildiriş email-i göndərir
     """
     try:
-        subject = f"Yeni əlaqə mesajı: {contact_message.subject}"
-        
-        message = f"""
-Yeni əlaqə mesajı alındı:
-
-Göndərən: {contact_message.sender_name}
-Email: {contact_message.sender_email}
-Mövzu: {contact_message.subject}
-Mesaj: {contact_message.message}
-
-Tarix: {contact_message.created_at}
-        """
-        
-        # Admin email-ini settings-dən alırıq
-        admin_email = getattr(settings, 'ADMIN_EMAIL', 'admin@faziletkitab.az')
-        
-        # Email konfiqurasiyasını log edirik
-        logger.info(f"Admin notification - FROM: {settings.DEFAULT_FROM_EMAIL}, TO: {admin_email}")
-        
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[admin_email],
-            fail_silently=False,
+        # Yeni email utility istifadə edirik
+        success = send_contact_email(
+            name=contact_message.sender_name,
+            email=contact_message.sender_email,
+            subject=contact_message.subject,
+            message=contact_message.message
         )
         
-        logger.info(f"Admin notification sent successfully to {admin_email}")
-        return True
+        if success:
+            logger.info(f"Admin notification sent successfully using new utility")
+            return True
+        else:
+            logger.error("Admin notification failed using new utility")
+            return False
+            
     except Exception as e:
         logger.error(f"Admin notification error: {str(e)}")
-        logger.error(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
         return False
 
 def send_auto_reply(contact_message):
@@ -128,25 +120,49 @@ def send_auto_reply(contact_message):
     Göndərənə avtomatik cavab göndərir
     """
     try:
-        subject = "Mesajınız alındı - Fazilet Kitab"
-        
-        message = f"""
+        # Giriş olan istifadəçilər üçün müraciət mesajı cavabı
+        if contact_message.user and contact_message.user.is_authenticated:
+            subject = "Dəyərli istifadəçi müraciətiniz qeyd-ə alındı"
+            
+            message = f"""
+Salam {contact_message.user.get_full_name() or contact_message.user.username},
+
+Dəyərli istifadəçi müraciətiniz qeydə alındı və nəzərdən keçirilir.
+
+Mesaj məlumatları:
+Mövzu: {contact_message.subject}
+Tarix: {contact_message.created_at.strftime('%d.%m.%Y %H:%M')}
+
+Tezliklə sizinlə əlaqə saxlayacağıq.
+
+Təşəkkürlər,
+dostumkitab.az komandası 🚀
+            """
+            
+            recipient_email = contact_message.user.email
+        else:
+            # Giriş olmayan istifadəçilər üçün adi cavab
+            subject = "Mesajınız alındı - dostumkitab.az"
+            
+            message = f"""
 Salam {contact_message.sender_name},
 
 Mesajınız uğurla alındı və nəzərdən keçirilir.
 
 Mesaj məlumatları:
 Mövzu: {contact_message.subject}
-Tarix: {contact_message.created_at}
+Tarix: {contact_message.created_at.strftime('%d.%m.%Y %H:%M')}
 
 Tezliklə sizinlə əlaqə saxlayacağıq.
 
 Təşəkkürlər,
-Fazilet Kitab komandası
-        """
+dostumkitab.az komandası 🚀
+            """
+            
+            recipient_email = contact_message.sender_email
         
         # Email konfiqurasiyasını log edirik
-        logger.info(f"Email config - FROM: {settings.DEFAULT_FROM_EMAIL}, TO: {contact_message.sender_email}")
+        logger.info(f"Email config - FROM: {settings.DEFAULT_FROM_EMAIL}, TO: {recipient_email}")
         logger.info(f"Email config - HOST: {settings.EMAIL_HOST}, PORT: {settings.EMAIL_PORT}")
         logger.info(f"Email config - USER: {settings.EMAIL_HOST_USER}")
         
@@ -154,16 +170,41 @@ Fazilet Kitab komandası
             subject=subject,
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[contact_message.sender_email],
+            recipient_list=[recipient_email],
             fail_silently=False,
         )
         
-        logger.info(f"Auto reply sent successfully to {contact_message.sender_email}")
+        logger.info(f"Auto reply sent successfully to {recipient_email}")
         return True
     except Exception as e:
         logger.error(f"Auto reply error: {str(e)}")
         logger.error(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
         return False
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_social_media_links(request):
+    """
+    Aktiv və gizlənməmiş sosial media linklərini qaytarır
+    """
+    try:
+        links = SocialMediaLink.objects.filter(
+            is_active=True, 
+            is_hidden=False
+        ).order_by('order', 'platform')
+        serializer = SocialMediaLinkSerializer(links, many=True)
+        
+        return Response({
+            'links': serializer.data,
+            'success': True
+        })
+        
+    except Exception as e:
+        logger.error(f"Social media links error: {str(e)}")
+        return Response({
+            'message': 'Sosial media linkləri yüklənərkən xəta baş verdi.',
+            'success': False
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

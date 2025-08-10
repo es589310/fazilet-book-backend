@@ -3,18 +3,43 @@ from .models import Category, Author, Publisher, Book, BookReview, Banner, SiteS
 
 class CategorySerializer(serializers.ModelSerializer):
     books_count = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
     
     class Meta:
         model = Category
-        fields = ['id', 'name', 'description', 'is_active', 'books_count']
+        fields = ['id', 'name', 'description', 'image', 'is_active', 'books_count']
     
     def get_books_count(self, obj):
         return obj.book_set.count()
+    
+    def get_image(self, obj):
+        # Əvvəlcə ImageKit URL-ni yoxlayır
+        if obj.imagekit_url:
+            return obj.imagekit_url
+        elif obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
 
 class AuthorSerializer(serializers.ModelSerializer):
+    photo = serializers.SerializerMethodField()
+    
     class Meta:
         model = Author
         fields = ['id', 'name', 'biography', 'birth_date', 'death_date', 'photo', 'nationality']
+    
+    def get_photo(self, obj):
+        # Əvvəlcə ImageKit URL-ni yoxlayır
+        if obj.photo_imagekit_url:
+            return obj.photo_imagekit_url
+        elif obj.photo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.photo.url)
+            return obj.photo.url
+        return None
 
 class PublisherSerializer(serializers.ModelSerializer):
     class Meta:
@@ -58,7 +83,10 @@ class BookListSerializer(serializers.ModelSerializer):
         ]
     
     def get_cover_image(self, obj):
-        if obj.cover_image:
+        # Əvvəlcə ImageKit URL-ni yoxlayır
+        if obj.cover_imagekit_url:
+            return obj.cover_imagekit_url
+        elif obj.cover_image:
             request = self.context.get('request')
             if request:
                 return request.build_absolute_uri(obj.cover_image.url)
@@ -90,7 +118,10 @@ class BookDetailSerializer(serializers.ModelSerializer):
         ]
     
     def get_cover_image(self, obj):
-        if obj.cover_image:
+        # Əvvəlcə ImageKit URL-ni yoxlayır
+        if obj.cover_imagekit_url:
+            return obj.cover_imagekit_url
+        elif obj.cover_image:
             request = self.context.get('request')
             if request:
                 return request.build_absolute_uri(obj.cover_image.url)
@@ -98,7 +129,10 @@ class BookDetailSerializer(serializers.ModelSerializer):
         return None
     
     def get_back_image(self, obj):
-        if obj.back_image:
+        # Əvvəlcə ImageKit URL-ni yoxlayır
+        if obj.back_imagekit_url:
+            return obj.back_imagekit_url
+        elif obj.back_image:
             request = self.context.get('request')
             if request:
                 return request.build_absolute_uri(obj.back_image.url)
@@ -108,9 +142,22 @@ class BookDetailSerializer(serializers.ModelSerializer):
 from .models import Banner
 
 class BannerSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    
     class Meta:
         model = Banner
         fields = ['id', 'title', 'subtitle', 'image', 'link', 'is_active']
+    
+    def get_image(self, obj):
+        # Əvvəlcə ImageKit URL-ni yoxlayır
+        if obj.imagekit_url:
+            return obj.imagekit_url
+        elif obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
 
 class SiteSettingsSerializer(serializers.ModelSerializer):
     class Meta:
