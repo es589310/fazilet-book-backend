@@ -9,16 +9,21 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields = ['name', 'description']
     prepopulated_fields = {'slug': ('name',)}
     list_editable = ['is_active']
+    list_per_page = 20
+    ordering = ['name']
     
     fieldsets = (
         ('Əsas Məlumatlar', {
-            'fields': ('name', 'slug', 'description')
+            'fields': ('name', 'slug', 'description'),
+            'description': 'Kateqoriya üçün əsas məlumatları daxil edin'
         }),
         ('Şəkil', {
-            'fields': ('image', 'imagekit_url')
+            'fields': ('image', 'imagekit_url'),
+            'description': 'Kateqoriya üçün şəkil yükləyin. ImageKit URL avtomatik doldurulacaq'
         }),
         ('Status', {
-            'fields': ('is_active',)
+            'fields': ('is_active',),
+            'description': 'Kateqoriyanın aktiv olub-olmadığını təyin edin'
         }),
     )
     
@@ -53,6 +58,23 @@ class AuthorAdmin(admin.ModelAdmin):
     list_filter = ['nationality', 'birth_date']
     search_fields = ['name', 'biography']
     date_hierarchy = 'birth_date'
+    list_per_page = 20
+    ordering = ['name']
+    
+    fieldsets = (
+        ('Əsas Məlumatlar', {
+            'fields': ('name', 'biography', 'nationality'),
+            'description': 'Müəllifin əsas məlumatları'
+        }),
+        ('Şəkil', {
+            'fields': ('photo', 'photo_imagekit_url'),
+            'description': 'Müəllif üçün foto yükləyin. ImageKit URL avtomatik doldurulacaq'
+        }),
+        ('Tarix Məlumatları', {
+            'fields': ('birth_date', 'death_date'),
+            'description': 'Müəllifin doğum və vəfat tarixləri'
+        }),
+    )
     
     def photo_display(self, obj):
         """Müəllif şəklinin admin panelində göstərilməsi"""
@@ -83,6 +105,19 @@ class AuthorAdmin(admin.ModelAdmin):
 class PublisherAdmin(admin.ModelAdmin):
     list_display = ['name', 'phone', 'email', 'website']
     search_fields = ['name', 'address']
+    list_per_page = 20
+    ordering = ['name']
+    
+    fieldsets = (
+        ('Əsas Məlumatlar', {
+            'fields': ('name', 'address'),
+            'description': 'Nəşriyyatın əsas məlumatları'
+        }),
+        ('Əlaqə Məlumatları', {
+            'fields': ('phone', 'email', 'website'),
+            'description': 'Nəşriyyatla əlaqə üçün lazım olan məlumatlar'
+        }),
+    )
 
 class BookReviewInline(admin.TabularInline):
     model = BookReview
@@ -104,26 +139,35 @@ class BookAdmin(admin.ModelAdmin):
     list_editable = ['price', 'stock_quantity', 'is_active', 'is_featured', 'is_bestseller']
     filter_horizontal = ['authors']
     inlines = [BookReviewInline]
+    list_per_page = 25
+    ordering = ['-created_at']
+    date_hierarchy = 'created_at'
     
     fieldsets = (
         ('Əsas Məlumatlar', {
-            'fields': ('title', 'slug', 'authors', 'category', 'publisher')
+            'fields': ('title', 'slug', 'authors', 'category', 'publisher'),
+            'description': 'Kitabın əsas məlumatlarını daxil edin'
         }),
         ('Kitab Detalları', {
-            'fields': ('isbn', 'description', 'language', 'pages', 'publication_date')
+            'fields': ('isbn', 'description', 'language', 'pages', 'publication_date'),
+            'description': 'Kitabın texniki məlumatlarını daxil edin'
         }),
         ('Qiymət və Stok', {
-            'fields': ('price', 'original_price', 'stock_quantity')
+            'fields': ('price', 'original_price', 'stock_quantity'),
+            'description': 'Qiymət və stok məlumatlarını təyin edin'
         }),
         ('Şəkillər', {
-            'fields': ('cover_image', 'back_image', 'cover_imagekit_url', 'back_imagekit_url')
+            'fields': ('cover_image', 'back_image', 'cover_imagekit_url', 'back_imagekit_url'),
+            'description': 'Kitab üçün şəkilləri yükləyin. ImageKit URL-lər avtomatik doldurulacaq'
         }),
         ('Status', {
-            'fields': ('is_active', 'is_featured', 'is_bestseller', 'is_new')
+            'fields': ('is_active', 'is_featured', 'is_bestseller', 'is_new'),
+            'description': 'Kitabın statusunu və xüsusiyyətlərini təyin edin'
         }),
         ('Statistika', {
             'fields': ('views_count', 'sales_count'),
-            'classes': ('collapse',)
+            'classes': ('collapse',),
+            'description': 'Kitabın statistik məlumatları (avtomatik hesablanır)'
         }),
     )
     
@@ -177,6 +221,24 @@ class BookReviewAdmin(admin.ModelAdmin):
     list_filter = ("rating", "created_at")
     search_fields = ("book__title", "comment")
     readonly_fields = ("created_at",)
+    list_per_page = 20
+    ordering = ['-created_at']
+    date_hierarchy = 'created_at'
+    
+    fieldsets = (
+        ('Əsas Məlumatlar', {
+            'fields': ('book', 'user', 'anonymous_user'),
+            'description': 'Rəy verən istifadəçi və kitab məlumatları'
+        }),
+        ('Rəy Məlumatları', {
+            'fields': ('rating', 'comment'),
+            'description': 'İstifadəçinin verdiyi rəy və qiymətləndirməsi'
+        }),
+        ('Tarix', {
+            'fields': ('created_at',),
+            'description': 'Rəyin yaradılma tarixi'
+        }),
+    )
     
     def user_name(self, obj):
         return obj.user_name
@@ -188,6 +250,24 @@ from .models import Banner
 class BannerAdmin(admin.ModelAdmin):
     list_display = ("title", "image_display", "is_active", "created_at")
     list_filter = ("is_active",)
+    list_editable = ("is_active",)
+    list_per_page = 20
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('Əsas Məlumatlar', {
+            'fields': ('title', 'subtitle', 'link'),
+            'description': 'Banner üçün əsas məlumatlar'
+        }),
+        ('Şəkil', {
+            'fields': ('image', 'imagekit_url'),
+            'description': 'Banner üçün şəkil yükləyin. ImageKit URL avtomatik doldurulacaq'
+        }),
+        ('Status', {
+            'fields': ('is_active',),
+            'description': 'Bannerin aktiv olub-olmadığını təyin edin'
+        }),
+    )
     
     def image_display(self, obj):
         """Banner şəklinin admin panelində göstərilməsi"""
@@ -240,3 +320,8 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # Silməyə icazə vermə
         return False
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }

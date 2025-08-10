@@ -1,9 +1,8 @@
-import os
 import requests
+import os
 from django.conf import settings
 from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
-import urllib.parse
 
 class ImageKitManager:
     def __init__(self):
@@ -107,3 +106,108 @@ class ImageKitManager:
 
 # Global instance
 imagekit_manager = ImageKitManager() 
+
+def get_imagekit_url(image_field):
+    """
+    Django ImageField-dan ImageKit URL-ni qaytarır
+    """
+    try:
+        if not image_field:
+            return None
+        
+        # Əgər ImageField-ın path-i varsa, onu istifadə et
+        if hasattr(image_field, 'path') and os.path.exists(image_field.path):
+            # Şəkli ImageKit-ə yüklə
+            result = upload_logo_to_imagekit(image_field)
+            if result['success']:
+                return result['url']
+        
+        # Əgər ImageField-ın url-i varsa, onu istifadə et
+        if hasattr(image_field, 'url'):
+            return image_field.url
+            
+        return None
+    except Exception as e:
+        print(f"ImageKit URL alma xətası: {str(e)}")
+        return None
+
+def upload_logo_to_imagekit(image_file, folder_name='site'):
+    """
+    Logo faylını ImageKit-ə yükləyir
+    """
+    try:
+        # ImageKit API endpoint
+        upload_url = "https://api.imagekit.io/v1/files/upload"
+        
+        # API key-lər
+        private_key = settings.IMAGEKIT_PRIVATE_KEY
+        public_key = settings.IMAGEKIT_PUBLIC_KEY
+        
+        # Fayl adını al
+        file_name = os.path.basename(image_file.name)
+        
+        # Faylı oxu
+        with open(image_file.path, 'rb') as f:
+            files = {'file': (file_name, f, 'image/png')}
+            
+            data = {
+                'fileName': file_name,
+                'folder': folder_name,
+                'useUniqueFileName': True,
+                'tags': ['logo', 'site'],
+                'responseFields': ['url', 'fileId', 'name']
+            }
+            
+            headers = {
+                'Authorization': f'Basic {private_key}'
+            }
+            
+            # ImageKit-ə yüklə
+            response = requests.post(upload_url, files=files, data=data, headers=headers)
+            
+            if response.status_code == 200:
+                result = response.json()
+                return {
+                    'success': True,
+                    'url': result.get('url'),
+                    'file_id': result.get('fileId'),
+                    'file_name': result.get('name')
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f'ImageKit API xətası: {response.status_code}'
+                }
+                
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'Logo yükləmə xətası: {str(e)}'
+        }
+
+def delete_logo_from_imagekit(file_id):
+    """
+    ImageKit-dən logo faylını silir
+    """
+    try:
+        delete_url = f"https://api.imagekit.io/v1/files/{file_id}"
+        
+        headers = {
+            'Authorization': f'Basic {settings.IMAGEKIT_PRIVATE_KEY}'
+        }
+        
+        response = requests.delete(delete_url, headers=headers)
+        
+        if response.status_code == 200:
+            return {'success': True}
+        else:
+            return {
+                'success': False,
+                'error': f'ImageKit silmə xətası: {response.status_code}'
+            }
+            
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'Logo silmə xətası: {str(e)}'
+        } 

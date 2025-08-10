@@ -5,12 +5,12 @@ from rest_framework.response import Response
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from .models import ContactMessage, SocialMediaLink
-from .serializers import ContactMessageSerializer, SocialMediaLinkSerializer
+from .models import ContactMessage, SocialMediaLink, SiteSettings
+from .serializers import ContactMessageSerializer, SocialMediaLinkSerializer, SiteSettingsSerializer
 from lib.email_utils import send_contact_email
-import logging
+# import logging
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -20,9 +20,9 @@ def send_contact_message(request):
     """
     try:
         # Debug: Gələn məlumatları log et
-        logger.info(f"Contact request - User authenticated: {request.user.is_authenticated}")
-        logger.info(f"Contact request - User: {request.user}")
-        logger.info(f"Contact request - Data: {request.data}")
+        # logger.info(f"Contact request - User authenticated: {request.user.is_authenticated}")
+        # logger.info(f"Contact request - User: {request.user}")
+        # logger.info(f"Contact request - Data: {request.data}")
         
         # Giriş olan istifadəçilər üçün request data-nı təmizlə
         data = request.data.copy()
@@ -33,7 +33,7 @@ def send_contact_message(request):
             if 'email' in data:
                 del data['email']
         
-        logger.info(f"Contact request - Cleaned data: {data}")
+        # logger.info(f"Contact request - Cleaned data: {data}")
         
         # Serializer yaradırıq
         serializer = ContactMessageSerializer(
@@ -85,7 +85,7 @@ def send_contact_message(request):
             }, status=status.HTTP_400_BAD_REQUEST)
             
     except Exception as e:
-        logger.error(f"Contact message error: {str(e)}")
+        # logger.error(f"Contact message error: {str(e)}")
         return Response({
             'message': 'Xəta baş verdi. Zəhmət olmasa daha sonra yenidən cəhd edin.',
             'success': False
@@ -105,14 +105,14 @@ def send_admin_notification(contact_message):
         )
         
         if success:
-            logger.info(f"Admin notification sent successfully using new utility")
+            # logger.info(f"Admin notification sent successfully using new utility")
             return True
         else:
-            logger.error("Admin notification failed using new utility")
+            # logger.error("Admin notification failed using new utility")
             return False
             
     except Exception as e:
-        logger.error(f"Admin notification error: {str(e)}")
+        # logger.error(f"Admin notification error: {str(e)}")
         return False
 
 def send_auto_reply(contact_message):
@@ -162,9 +162,9 @@ dostumkitab.az komandası 🚀
             recipient_email = contact_message.sender_email
         
         # Email konfiqurasiyasını log edirik
-        logger.info(f"Email config - FROM: {settings.DEFAULT_FROM_EMAIL}, TO: {recipient_email}")
-        logger.info(f"Email config - HOST: {settings.EMAIL_HOST}, PORT: {settings.EMAIL_PORT}")
-        logger.info(f"Email config - USER: {settings.EMAIL_HOST_USER}")
+        # logger.info(f"Email config - FROM: {settings.DEFAULT_FROM_EMAIL}, TO: {recipient_email}")
+        # logger.info(f"Email config - HOST: {settings.EMAIL_HOST}, PORT: {settings.EMAIL_PORT}")
+        # logger.info(f"Email config - USER: {settings.EMAIL_HOST_USER}")
         
         send_mail(
             subject=subject,
@@ -174,11 +174,11 @@ dostumkitab.az komandası 🚀
             fail_silently=False,
         )
         
-        logger.info(f"Auto reply sent successfully to {recipient_email}")
+        # logger.info(f"Auto reply sent successfully to {recipient_email}")
         return True
     except Exception as e:
-        logger.error(f"Auto reply error: {str(e)}")
-        logger.error(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
+        # logger.error(f"Auto reply error: {str(e)}")
+        # logger.error(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
         return False
 
 @api_view(['GET'])
@@ -200,9 +200,33 @@ def get_social_media_links(request):
         })
         
     except Exception as e:
-        logger.error(f"Social media links error: {str(e)}")
+        # logger.error(f"Social media links error: {str(e)}")
         return Response({
             'message': 'Sosial media linkləri yüklənərkən xəta baş verdi.',
+            'success': False
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_site_settings(request):
+    """
+    Sayt tənzimləmələrini qaytarır
+    """
+    try:
+        site_settings = SiteSettings.objects.filter(is_active=True).first()
+        if site_settings:
+            serializer = SiteSettingsSerializer(site_settings)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'message': 'Sayt tənzimləmələri tapılmadı.',
+                'success': False
+            }, status=status.HTTP_404_NOT_FOUND)
+            
+    except Exception as e:
+        # logger.error(f"Site settings error: {str(e)}")
+        return Response({
+            'message': 'Sayt tənzimləmələri yüklənərkən xəta baş verdi.',
             'success': False
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -216,12 +240,12 @@ def test_email(request):
         from django.core.mail import send_mail
         
         # Email konfiqurasiyasını log edirik
-        logger.info(f"Testing email configuration:")
-        logger.info(f"EMAIL_HOST: {settings.EMAIL_HOST}")
-        logger.info(f"EMAIL_PORT: {settings.EMAIL_PORT}")
-        logger.info(f"EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
-        logger.info(f"DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
-        logger.info(f"ADMIN_EMAIL: {settings.ADMIN_EMAIL}")
+        # logger.info(f"Testing email configuration:")
+        # logger.info(f"EMAIL_HOST: {settings.EMAIL_HOST}")
+        # logger.info(f"EMAIL_PORT: {settings.EMAIL_PORT}")
+        # logger.info(f"EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
+        # logger.info(f"DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
+        # logger.info(f"ADMIN_EMAIL: {settings.ADMIN_EMAIL}")
         
         # Test email göndəririk
         send_mail(
@@ -238,7 +262,7 @@ def test_email(request):
         })
         
     except Exception as e:
-        logger.error(f"Test email error: {str(e)}")
+        # logger.error(f"Test email error: {str(e)}")
         return Response({
             'message': f'Test email xətası: {str(e)}',
             'success': False

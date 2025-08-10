@@ -4,6 +4,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
+# Admin konfiqurasiyasını import et
+from . import admin as admin_config
+
 # Admin panel başlıqlarını dəyişirik
 admin.site.site_header = settings.ADMIN_SITE_HEADER
 admin.site.site_title = settings.ADMIN_SITE_TITLE

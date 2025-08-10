@@ -175,9 +175,9 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # Admin panel customization
-ADMIN_SITE_HEADER = "KitabSat Admin Panel"
-ADMIN_SITE_TITLE = "KitabSat"
-ADMIN_INDEX_TITLE = "Kitab Satış Sistemi İdarəetmə Paneli"
+ADMIN_SITE_HEADER = "📚 Kitab Satış Sistemi"
+ADMIN_SITE_TITLE = "Kitab Satış Admin"
+ADMIN_INDEX_TITLE = "İdarəetmə Paneli"
 
 
 # Email Configuration

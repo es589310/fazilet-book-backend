@@ -2,6 +2,56 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+class SiteSettings(models.Model):
+    """Sayt üçün əsas tənzimləmələr"""
+    site_name = models.CharField(max_length=100, default="Fəzilət Kitab", verbose_name="Sayt adı")
+    site_description = models.TextField(blank=True, verbose_name="Sayt təsviri")
+    
+    # Navbar logo
+    navbar_logo = models.ImageField(upload_to='site/navbar/', blank=True, null=True, verbose_name="Navbar Logo")
+    navbar_logo_imagekit_url = models.URLField(blank=True, null=True, verbose_name="Navbar Logo ImageKit URL")
+    
+    # Footer logo
+    footer_logo = models.ImageField(upload_to='site/footer/', blank=True, null=True, verbose_name="Footer Logo")
+    footer_logo_imagekit_url = models.URLField(blank=True, null=True, verbose_name="Footer Logo ImageKit URL")
+    
+    phone = models.CharField(max_length=20, blank=True, verbose_name="Telefon")
+    email = models.EmailField(blank=True, verbose_name="E-mail")
+    address = models.TextField(blank=True, verbose_name="Ünvan")
+    is_active = models.BooleanField(default=True, verbose_name="Aktiv")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaradılma tarixi")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Yenilənmə tarixi")
+    
+    class Meta:
+        verbose_name = "Logo"
+        verbose_name_plural = "Logo"
+    
+    def __str__(self):
+        return f"{self.site_name} - Logo"
+    
+    def save(self, *args, **kwargs):
+        # Əgər yalnız bir tənzimləmə olsun
+        if not self.pk and SiteSettings.objects.exists():
+            return
+        
+        # Media URL-lərini avtomatik doldur
+        if self.navbar_logo and not self.navbar_logo_imagekit_url:
+            try:
+                # Media URL-ni istifadə et
+                self.navbar_logo_imagekit_url = self.navbar_logo.url
+            except Exception:
+                self.navbar_logo_imagekit_url = None
+        
+        if self.footer_logo and not self.footer_logo_imagekit_url:
+            try:
+                # Media URL-ni istifadə et
+                self.footer_logo_imagekit_url = self.footer_logo.url
+            except Exception:
+                self.footer_logo_imagekit_url = None
+        
+        super().save(*args, **kwargs)
+
+
 class ContactMessage(models.Model):
     MESSAGE_STATUS = (
         ('pending', 'Gözləyir'),

@@ -30,6 +30,20 @@ class CartAdmin(admin.ModelAdmin):
     search_fields = ['user__username', 'user__email', 'anonymous_user__display_name']
     inlines = [CartItemInline]
     readonly_fields = ['total_items', 'total_price', 'user_identifier']
+    list_per_page = 20
+    ordering = ['-updated_at']
+    date_hierarchy = 'updated_at'
+    
+    fieldsets = (
+        ('İstifadəçi Məlumatları', {
+            'fields': ('user', 'anonymous_user'),
+            'description': 'Səbətin sahibi olan istifadəçi'
+        }),
+        ('Statistik Məlumatlar', {
+            'fields': ('total_items', 'total_price'),
+            'description': 'Səbətdəki məhsulların sayı və ümumi qiyməti (avtomatik hesablanır)'
+        }),
+    )
     
     def user_identifier(self, obj):
         if obj.user:
@@ -65,23 +79,31 @@ class OrderAdmin(admin.ModelAdmin):
     list_editable = ['status', 'payment_status']
     inlines = [OrderItemInline, OrderStatusHistoryInline]
     readonly_fields = ['order_number', 'created_at', 'updated_at']
+    list_per_page = 25
+    ordering = ['-created_at']
+    date_hierarchy = 'created_at'
     
     fieldsets = (
         ('Sifariş Məlumatları', {
-            'fields': ('order_number', 'user', 'status', 'payment_status', 'payment_method')
+            'fields': ('order_number', 'user', 'status', 'payment_status', 'payment_method'),
+            'description': 'Sifarişin əsas məlumatları və statusu'
         }),
         ('Qiymət Məlumatları', {
-            'fields': ('subtotal', 'shipping_cost', 'discount_amount', 'total_amount')
+            'fields': ('subtotal', 'shipping_cost', 'discount_amount', 'total_amount'),
+            'description': 'Sifarişin qiymət hesablamaları'
         }),
         ('Çatdırılma Məlumatları', {
-            'fields': ('delivery_name', 'delivery_phone', 'delivery_address', 'delivery_address_text')
+            'fields': ('delivery_name', 'delivery_phone', 'delivery_address', 'delivery_address_text'),
+            'description': 'Məhsulun çatdırılması üçün lazım olan məlumatlar'
         }),
         ('Qeydlər', {
-            'fields': ('notes', 'admin_notes')
+            'fields': ('notes', 'admin_notes'),
+            'description': 'Sifariş haqqında əlavə qeydlər'
         }),
         ('Tarixlər', {
             'fields': ('created_at', 'updated_at', 'shipped_at', 'delivered_at'),
-            'classes': ('collapse',)
+            'classes': ('collapse',),
+            'description': 'Sifarişin müxtəlif mərhələlərdəki tarixləri'
         }),
     )
     
@@ -97,6 +119,11 @@ class OrderAdmin(admin.ModelAdmin):
                     created_by=request.user
                 )
         super().save_model(request, obj, form, change)
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
 
 @admin.register(OrderStatusHistory)
 class OrderStatusHistoryAdmin(admin.ModelAdmin):

@@ -1,10 +1,10 @@
 from django.apps import AppConfig
 
 
-class ContactConfig(AppConfig):
+class UsersConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'contact'
-    verbose_name = '📞 Əlaqə'
+    name = 'users'
+    verbose_name = '👥 İstifadəçilər'
     
     def ready(self):
-        import contact.signals
+        pass 
