@@ -16,6 +16,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('users.urls')),
     path('api/books/', include('books.urls')),
+    path('api/settings/', include('settings.urls')),
     path('api/orders/', include('orders.urls')),
     path('api/contact/', include('contact.urls')),
     path('test-imagekit/', TemplateView.as_view(template_name='test_imagekit.html'), name='test-imagekit'),

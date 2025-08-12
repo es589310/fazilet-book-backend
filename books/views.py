@@ -3,8 +3,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
-from .models import Category, Book, BookReview, Banner, SiteSettings
-from .serializers import CategorySerializer, BookListSerializer, BookDetailSerializer, BookReviewSerializer, BannerSerializer, SiteSettingsSerializer
+from .models import Category, Book, BookReview, Banner
+from .serializers import CategorySerializer, BookListSerializer, BookDetailSerializer, BookReviewSerializer, BannerSerializer
 from .filters import BookFilter
 from rest_framework import generics, filters, permissions
 from rest_framework.decorators import api_view
@@ -137,21 +137,7 @@ class BannerListView(ListAPIView):
     queryset = Banner.objects.filter(is_active=True)
     serializer_class = BannerSerializer
 
-class SiteSettingsView(RetrieveAPIView):
-    """Sayt tənzimləmələri"""
-    serializer_class = SiteSettingsSerializer
-    permission_classes = [AllowAny]
-    
-    def get_object(self):
-        return SiteSettings.get_settings()
 
-@api_view(['GET'])
-def whatsapp_number(request):
-    """WhatsApp nömrəsini qaytarır"""
-    settings = SiteSettings.get_settings()
-    return Response({
-        'whatsapp_number': settings.whatsapp_number
-    })
 
 @api_view(['POST'])
 def upload_image_to_imagekit(request):

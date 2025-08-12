@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Author, Publisher, Book, BookReview, Banner, SiteSettings
+from .models import Category, Author, Publisher, Book, BookReview, Banner
 
 class CategorySerializer(serializers.ModelSerializer):
     books_count = serializers.SerializerMethodField()
@@ -159,11 +159,4 @@ class BannerSerializer(serializers.ModelSerializer):
             return obj.image.url
         return None
 
-class SiteSettingsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SiteSettings
-        fields = [
-            'site_name', 'site_description', 'phone', 'email', 
-            'address', 'working_hours', 'copyright_year', 'facebook', 'instagram', 
-            'twitter', 'youtube'
-        ]
+

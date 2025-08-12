@@ -170,6 +170,8 @@ class BookReview(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+        verbose_name = "Kitab Rəyi"
+        verbose_name_plural = "Kitab Rəyləri"
     
     def __str__(self):
         user_name = self.user.get_full_name() if self.user else self.anonymous_user.display_name if self.anonymous_user else "Anonim"
@@ -203,30 +205,4 @@ class Banner(models.Model):
     def __str__(self):
         return self.title
 
-class SiteSettings(models.Model):
-    """Sayt tənzimləmələri"""
-    site_name = models.CharField(max_length=200, default="Fəzilət Kitab", verbose_name="Sayt Adı")
-    site_description = models.TextField(default="Azərbaycanda ən böyük onlayn kitab mağazası. Minlərlə kitab, ən yaxşı qiymətlər və sürətli çatdırılma xidməti.", verbose_name="Sayt Təsviri")
-    phone = models.CharField(max_length=20, default="+994 12 345 67 89", verbose_name="Telefon")
-    email = models.EmailField(default="info@faziletkitab.az", verbose_name="E-mail")
-    address = models.TextField(blank=True, verbose_name="Ünvan")
-    working_hours = models.CharField(max_length=100, default="Bazar ertəsi - Cümə: 09:00-18:00", verbose_name="İş Saatları")
-    copyright_year = models.IntegerField(default=2024, verbose_name="Copyright İli")
-    facebook = models.URLField(blank=True, verbose_name="Facebook")
-    instagram = models.URLField(blank=True, verbose_name="Instagram")
-    twitter = models.URLField(blank=True, verbose_name="Twitter")
-    youtube = models.URLField(blank=True, verbose_name="YouTube")
-    whatsapp_number = models.CharField(max_length=20, default="+994501234567", verbose_name="WhatsApp Nömrəsi")
-    
-    class Meta:
-        verbose_name = "Sayt Tənzimləməsi"
-        verbose_name_plural = "Sayt Tənzimləmələri"
-    
-    def __str__(self):
-        return f"Sayt Tənzimləmələri"
-    
-    @classmethod
-    def get_settings(cls):
-        """Tək instance qaytarır"""
-        settings, created = cls.objects.get_or_create(id=1)
-        return settings
+

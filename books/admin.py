@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Category, Author, Publisher, Book, BookReview, Banner, SiteSettings
+from .models import Category, Author, Publisher, Book, BookReview, Banner
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -243,6 +243,10 @@ class BookReviewAdmin(admin.ModelAdmin):
     def user_name(self, obj):
         return obj.user_name
     user_name.short_description = "İstifadəçi"
+    
+    class Meta:
+        verbose_name = "Kitab Rəyi"
+        verbose_name_plural = "Kitab Rəyləri"
 
 from .models import Banner
 
@@ -294,34 +298,3 @@ class BannerAdmin(admin.ModelAdmin):
                 obj.imagekit_id = result['file_id']
                 obj.save(update_fields=['imagekit_url', 'imagekit_id'])
 
-@admin.register(SiteSettings)
-class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ['site_name', 'phone', 'email', 'whatsapp_number', 'copyright_year']
-    fieldsets = (
-        ('Əsas Məlumatlar', {
-            'fields': ('site_name', 'site_description')
-        }),
-        ('Əlaqə Məlumatları', {
-            'fields': ('phone', 'email', 'address', 'working_hours', 'whatsapp_number')
-        }),
-        ('Copyright', {
-            'fields': ('copyright_year',)
-        }),
-        ('Sosial Media', {
-            'fields': ('facebook', 'instagram', 'twitter', 'youtube'),
-            'classes': ('collapse',)
-        }),
-    )
-    
-    def has_add_permission(self, request):
-        # Yalnız bir instance ola bilər
-        return not SiteSettings.objects.exists()
-    
-    def has_delete_permission(self, request, obj=None):
-        # Silməyə icazə vermə
-        return False
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }

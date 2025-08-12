@@ -1,20 +1,5 @@
 from rest_framework import serializers
-from .models import ContactMessage, SocialMediaLink, SiteSettings
-
-class SiteSettingsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SiteSettings
-        fields = [
-            'site_name', 
-            'site_description', 
-            'navbar_logo', 
-            'navbar_logo_imagekit_url',
-            'footer_logo', 
-            'footer_logo_imagekit_url',
-            'phone', 
-            'email', 
-            'address'
-        ]
+from .models import ContactMessage, SocialMediaLink
 
 class ContactMessageSerializer(serializers.ModelSerializer):
     class Meta:

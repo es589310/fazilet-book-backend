@@ -1,0 +1,32 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        {% if site_header %}{{ site_header }}{% else %}{{ site_title|default:_('Django administration') }}{% endif %}
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Təsdiqləmə və Səlahiyyət caption-ına ikon əlavə et
+    const authSection = document.querySelector('h2:contains("Təsdiqləmə və Səlahiyyət")');
+    if (authSection) {
+        authSection.innerHTML = '👥 Təsdiqləmə və Səlahiyyət';
+    }
+    
+    // Alternativ olaraq bütün h2 elementlərini yoxla
+    const allH2s = document.querySelectorAll('h2');
+    allH2s.forEach(function(h2) {
+        if (h2.textContent.includes('Təsdiqləmə və Səlahiyyət')) {
+            h2.innerHTML = '👥 Təsdiqləmə və Səlahiyyət';
+        }
+    });
+});
+</script> 

@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from .models import ContactMessage, SocialMediaLink, SiteSettings
-from .serializers import ContactMessageSerializer, SocialMediaLinkSerializer, SiteSettingsSerializer
+from .models import ContactMessage, SocialMediaLink
+from .serializers import ContactMessageSerializer, SocialMediaLinkSerializer
 from lib.email_utils import send_contact_email
 # import logging
 

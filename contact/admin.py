@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ContactMessage, SocialMediaLink, SiteSettings
+from .models import ContactMessage, SocialMediaLink
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(admin.ModelAdmin):
@@ -68,42 +68,7 @@ class SocialMediaLinkAdmin(admin.ModelAdmin):
         return super().get_queryset(request).order_by('order', 'platform')
 
 
-@admin.register(SiteSettings)
-class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ['site_name', 'has_navbar_logo', 'has_footer_logo', 'is_active']
-    list_filter = ['is_active', 'created_at']
-    search_fields = ['site_name']
-    readonly_fields = ['created_at', 'updated_at']
-    
-    fieldsets = (
-        ('Logo Tənzimləmələri', {
-            'fields': ('navbar_logo', 'navbar_logo_imagekit_url', 'footer_logo', 'footer_logo_imagekit_url'),
-            'description': 'Navbar və Footer üçün logo-ları yükləyin. ImageKit URL-ləri avtomatik doldurulacaq.'
-        }),
-        ('Sayt Məlumatları', {
-            'fields': ('site_name', 'site_description', 'phone', 'email', 'address', 'is_active')
-        }),
-    )
-    
-    def has_navbar_logo(self, obj):
-        return bool(obj.navbar_logo)
-    has_navbar_logo.boolean = True
-    has_navbar_logo.short_description = 'Navbar Logo'
-    
-    def has_footer_logo(self, obj):
-        return bool(obj.footer_logo)
-    has_footer_logo.boolean = True
-    has_footer_logo.short_description = 'Footer Logo'
-    
-    def has_add_permission(self, request):
-        # Yalnız bir tənzimləmə olsun
-        return not SiteSettings.objects.exists()
-    
-    class Meta:
-        verbose_name = "Logo"
-        verbose_name_plural = "Logo"
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
+
+
+
+
