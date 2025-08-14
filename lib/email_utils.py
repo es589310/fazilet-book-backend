@@ -187,4 +187,61 @@ def get_email_fallback_message():
     return """
 Email konfiqurasiyası hazır deyil. 
 Zəhmət olmasa sistem administratoru ilə əlaqə saxlayın.
-    """ 
+    """
+
+def send_welcome_email(user, **kwargs):
+    """
+    Send welcome email to newly registered users
+    
+    Args:
+        user: User instance
+        **kwargs: Additional email parameters
+    
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    try:
+        welcome_subject = "dostumkitab.az-a xoş gəlmisiniz! 🚀"
+        
+        welcome_message = f"""
+Salam {user.first_name or user.username}!
+
+dostumkitab.az saytına qeydiyyatdan keçdiyiniz üçün təşəkkür edirik! 🎉
+
+Hesabınız uğurla yaradıldı və indi saytımızın bütün imkanlarından istifadə edə bilərsiniz.
+
+Hesab məlumatları:
+İstifadəçi adı: {user.username}
+Qeydiyyat tarixi: {timezone.now().strftime('%d.%m.%Y %H:%M')}
+
+Saytımızda:
+📚 Ən yaxşı kitablar
+🛒 Rahat alış-veriş
+🚚 Sürətli çatdırılma
+💳 Təhlükəsiz ödəniş
+
+Suallarınız üçün bizimlə əlaqə saxlayın.
+
+Təşəkkürlər,
+dostumkitab.az komandası 📖✨
+        """
+        
+        result = send_mail(
+            subject=welcome_subject,
+            message=welcome_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,  # Production: don't fail on email errors
+            **kwargs
+        )
+        
+        if result:
+            logger.info(f"Welcome email sent successfully to {user.email}")
+            return True
+        else:
+            logger.warning(f"Welcome email failed to send to {user.email}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Welcome email error: {str(e)}")
+        return False 
