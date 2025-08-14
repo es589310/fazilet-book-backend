@@ -64,38 +64,38 @@ class OrderSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'order_number', 'created_at']
 
 class OrderCreateSerializer(serializers.ModelSerializer):
-    delivery_address_id = serializers.IntegerField()
     
     class Meta:
         model = Order
         fields = [
-            'delivery_address_id', 'delivery_name', 'delivery_phone', 
+            'delivery_name', 'delivery_phone', 'delivery_address_text', 
             'payment_method', 'notes'
         ]
     
     def create(self, validated_data):
         user = self.context['request'].user
-        delivery_address_id = validated_data.pop('delivery_address_id')
         
         # İstifadəçinin səbətini al
         cart = Cart.objects.get(user=user)
         if not cart.items.exists():
             raise serializers.ValidationError("Səbət boşdur!")
         
-        # Çatdırılma ünvanını yoxla
-        try:
-            delivery_address = user.addresses.get(id=delivery_address_id, is_active=True)
-        except:
-            raise serializers.ValidationError("Çatdırılma ünvanı tapılmadı!")
-        
         # Sifarişi yarat
         order = Order.objects.create(
             user=user,
-            delivery_address=delivery_address,
-            delivery_address_text=delivery_address.full_address,
+            delivery_address_text=validated_data.get('delivery_address_text', ''),
             subtotal=cart.total_price,
             total_amount=cart.total_price,  # Hələlik çatdırılma pulsuz
             **validated_data
+        )
+        
+        # Sifariş status tarixçəsi yarat
+        from .models import OrderStatusHistory
+        OrderStatusHistory.objects.create(
+            order=order,
+            status='pending',
+            notes='Sifariş yaradıldı',
+            created_by=user
         )
         
         # Səbət elementlərini sifarişə köçür

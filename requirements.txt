@@ -1,8 +1,89 @@
+# Production Requirements for Kitab Backend
+# Bu faylı həm development, həm də production üçün istifadə edin
+
+# Core Django - Production Versions
 Django==4.2.7
 djangorestframework==3.14.0
 django-cors-headers==4.3.1
-Pillow==10.1.0
-psycopg2-binary==2.9.9
-python-decouple==3.8
-djangorestframework-simplejwt==5.3.0
 django-filter==23.4
+
+# Database - Production Ready
+psycopg2-binary==2.9.9
+
+# Authentication - Production Ready
+djangorestframework-simplejwt==5.3.0
+
+# Image Processing - Production Ready
+Pillow==10.1.0
+
+# Environment & Configuration - Production Ready
+python-decouple==3.8
+
+# Production Server - Gunicorn
+gunicorn==21.2.0
+
+# Static Files - Production Serving
+whitenoise==6.6.0
+
+# Database URL - Production Ready
+dj-database-url==2.1.0
+
+# ImageKit - Production Image Optimization
+imagekitio==3.0.0
+
+# Monitoring & Logging - Production Ready
+sentry-sdk==1.40.0
+
+# Caching - Production Ready
+redis==5.0.1
+django-redis==5.4.0
+
+# Background Tasks - Production Ready
+celery==5.3.4
+
+# Security - Production Ready
+django-ratelimit==4.1.0
+
+# Production Security & Performance
+django-secure==1.0.2
+django-honeypot==1.0.2
+django-axes==6.1.0
+
+# Production Monitoring
+django-prometheus==2.3.1
+django-health-check==3.17.0
+
+# Production Caching & Performance
+django-cacheops==8.0.0
+django-compressor==4.4
+
+# Production Database Optimization
+django-extensions==3.2.3
+
+# Production File Handling
+django-storages==1.14.2
+
+# Production Email
+django-anymail==10.1
+
+# Production Backup
+django-dbbackup==3.3.0
+
+# Production Search (Optional)
+django-elasticsearch-dsl==8.0
+
+# Production API Documentation
+drf-spectacular==0.27.0
+
+# Production Testing
+pytest==7.4.3
+pytest-django==4.7.0
+factory-boy==3.3.0
+
+# Production Code Quality
+black==23.11.0
+flake8==6.1.0
+isort==5.12.0
+
+# Production Environment
+python-dotenv==1.0.0

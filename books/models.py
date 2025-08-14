@@ -133,11 +133,15 @@ class Book(models.Model):
         return None
     
     def get_optimized_cover_url(self, width=None, height=None, quality=80):
-        """Optimizasiya edilmiş üz qabığı URL-ni qaytarır"""
+        """Optimizasiya edilmiş üz qabığı URL-ni qaytarır - Production Error Handling ilə"""
         if self.cover_imagekit_url:
-            from lib.imagekit_utils import imagekit_manager
-            filename = self.cover_imagekit_url.split('/')[-1]
-            return imagekit_manager.optimize_image_url(filename, width, height, quality)
+            try:
+                from lib.imagekit_utils import imagekit_manager
+                filename = self.cover_imagekit_url.split('/')[-1]
+                return imagekit_manager.optimize_image_url(filename, width, height, quality)
+            except ImportError:
+                # ImageKit not available - fallback
+                return self.get_cover_image_url()
         return self.get_cover_image_url()
     
     @property
@@ -149,11 +153,9 @@ class Book(models.Model):
     
     @property
     def average_rating(self):
-        """Orta reytinqi hesabla"""
-        reviews = self.reviews.all()
-        if reviews:
-            return sum([review.rating for review in reviews]) / len(reviews)
-        return 0
+        """Orta reytinqi hesabla - Production Performance ilə"""
+        from django.db.models import Avg
+        return self.reviews.aggregate(Avg('rating'))['rating__avg'] or 0
     
     @property
     def reviews_count(self):

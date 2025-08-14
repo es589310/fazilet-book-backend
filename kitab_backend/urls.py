@@ -2,7 +2,9 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import TemplateView
+from django.http import JsonResponse
+from django.db import connection
+import django.utils.timezone
 
 # Admin konfiqurasiyasını import et
 from . import admin as admin_config
@@ -12,6 +14,41 @@ admin.site.site_header = settings.ADMIN_SITE_HEADER
 admin.site.site_title = settings.ADMIN_SITE_TITLE
 admin.site.index_title = settings.ADMIN_INDEX_TITLE
 
+# Health check view
+def health_check(request):
+    """Production health check endpoint"""
+    try:
+        # Database connection check
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            db_status = "healthy"
+    except Exception as e:
+        db_status = f"unhealthy: {str(e)}"
+    
+    # Application status
+    app_status = "healthy"
+    
+    # Check critical services
+    services = {
+        "database": db_status,
+        "application": app_status,
+        "environment": "production" if not settings.DEBUG else "development"
+    }
+    
+    # Overall health
+    overall_healthy = all("healthy" in status for status in services.values())
+    status_code = 200 if overall_healthy else 503
+    
+    response_data = {
+        "status": "healthy" if overall_healthy else "unhealthy",
+        "timestamp": django.utils.timezone.now().isoformat(),
+        "services": services,
+        "version": "1.0.0"
+    }
+    
+    return JsonResponse(response_data, status=status_code)
+
+# Production URL patterns
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('users.urls')),
@@ -19,10 +56,17 @@ urlpatterns = [
     path('api/settings/', include('settings.urls')),
     path('api/orders/', include('orders.urls')),
     path('api/contact/', include('contact.urls')),
-    path('test-imagekit/', TemplateView.as_view(template_name='test_imagekit.html'), name='test-imagekit'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('health/', health_check, name='health_check'),
+]
 
-# Media files serving in development
+# Static and Media files serving
 if settings.DEBUG:
+    # Development: Serve static and media files through Django
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+else:
+    # Production: Static files should be served by web server (nginx/apache)
+    # Media files can be served by Django or web server
+    # Uncomment the line below if you want Django to serve media files in production
+    # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    pass

@@ -7,5 +7,6 @@ urlpatterns = [
     path('send/', views.send_contact_message, name='send_contact_message'),
     path('social-links/', views.get_social_media_links, name='social_media_links'),
     path('site-settings/', views.get_site_settings, name='site_settings'),
-    path('test-email/', views.test_email, name='test_email'),
+    # Production: test endpoint removed for security
+    # path('test-email/', views.test_email, name='test_email'),
 ] 
