@@ -262,4 +262,30 @@ def delete_image(file_id: str) -> bool:
 
 def get_image_info(file_id: str) -> Optional[Dict]:
     """Convenience function for getting image info"""
-    return imagekit_manager.get_image_info(file_id) 
+    return imagekit_manager.get_image_info(file_id)
+
+# Logo-specific convenience functions
+def upload_logo_to_imagekit(image_file, folder_path: str = 'site') -> Dict[str, Union[str, bool, int]]:
+    """
+    Convenience function specifically for logo uploads
+    
+    Args:
+        image_file: Django image file
+        folder_path: Folder path in ImageKit (e.g., 'site/navbar', 'site/footer')
+        
+    Returns:
+        Dict with upload result
+    """
+    return imagekit_manager.upload_image(image_file, folder_path)
+
+def delete_logo_from_imagekit(file_id: str) -> bool:
+    """
+    Convenience function specifically for logo deletion
+    
+    Args:
+        file_id: ImageKit file ID
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    return imagekit_manager.delete_image(file_id) 
