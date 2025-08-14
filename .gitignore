@@ -228,3 +228,6 @@ $RECYCLE.BIN/
 *.tmp
 *.temp
 *.cache
+
+venv/
+# 🔒 CRITICAL SECURITY - Miscellaneous
