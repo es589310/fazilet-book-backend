@@ -10,6 +10,7 @@ django-imagekit==5.0.0
 django-redis==6.0.0
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.0
+gunicorn==22.0.0
 idna==3.10
 imagekitio==4.1.0
 pilkit==3.0
