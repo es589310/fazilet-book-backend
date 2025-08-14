@@ -1,0 +1,1 @@
+web: gunicorn kitab_backend.wsgi --log-file - 
