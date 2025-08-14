@@ -155,15 +155,15 @@ class ImageKitManager:
         
         try:
             # Build transformation parameters
-        transformations = []
-        
-        if width:
-            transformations.append(f"w-{width}")
-        if height:
-            transformations.append(f"h-{height}")
-        
-        transformations.append(f"q-{quality}")
+            transformations = []
             
+            if width:
+                transformations.append(f"w-{width}")
+            if height:
+                transformations.append(f"h-{height}")
+            
+            transformations.append(f"q-{quality}")
+                
             # Construct URL
             if transformations:
                 transform_str = ",".join(transformations)
@@ -204,7 +204,7 @@ class ImageKitManager:
         except ImportError:
             logger.warning("ImageKit library not installed")
             return False
-    except Exception as e:
+        except Exception as e:
             logger.error(f"ImageKit delete error: {str(e)}")
             return False
     
@@ -238,7 +238,7 @@ class ImageKitManager:
         except ImportError:
             logger.warning("ImageKit library not installed")
             return None
-    except Exception as e:
+        except Exception as e:
             logger.error(f"ImageKit info error: {str(e)}")
             return None
 

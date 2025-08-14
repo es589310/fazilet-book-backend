@@ -20,3 +20,4 @@ requests==2.32.4
 setuptools==80.9.0
 sqlparse==0.5.3
 urllib3==2.5.0
+imagekitio>=4.0.0
