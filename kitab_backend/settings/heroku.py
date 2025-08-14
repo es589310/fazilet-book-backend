@@ -8,7 +8,7 @@ import dj_database_url
 from .base import *
 
 # Heroku Environment Detection
-IS_HEROKU = os.environ.get('IS_HEROKU', False)
+IS_HEROKU = os.environ.get('IS_HEROKU', 'True').lower() == 'true'
 
 # Production Security Settings
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
