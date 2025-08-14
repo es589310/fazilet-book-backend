@@ -14,7 +14,7 @@ psycopg2-binary==2.9.9
 djangorestframework-simplejwt==5.3.0
 
 # Image Processing - Production Ready
-Pillow==10.1.0
+Pillow>=10.2.0
 
 # Environment & Configuration - Production Ready
 python-decouple==3.8
