@@ -32,11 +32,11 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 
 # Production Hosts
-ALLOWED_HOSTS_STR = os.environ.get('ALLOWED_HOSTS', 'faziletkitab.az,www.faziletkitab.az')
+ALLOWED_HOSTS_STR = os.environ.get('ALLOWED_HOSTS', 'dostumkitab.az,www.dostumkitab.az,dostumkitabapp-bb96d7362d57.herokuapp.com')
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(',')]
 
 # Production CORS
-CORS_ALLOWED_ORIGINS_STR = os.environ.get('CORS_ALLOWED_ORIGINS', 'https://faziletkitab.az,https://www.faziletkitab.az')
+CORS_ALLOWED_ORIGINS_STR = os.environ.get('CORS_ALLOWED_ORIGINS', 'https://dostumkitab.az,https://www.dostumkitab.az,https://dostumkitabapp-bb96d7362d57.herokuapp.com')
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS_STR.split(',')]
 
 # Database Configuration - Heroku PostgreSQL
@@ -115,7 +115,7 @@ IMAGEKIT_ENABLED = os.environ.get('IMAGEKIT_ENABLED', 'False').lower() == 'true'
 IMAGEKIT_PUBLIC_KEY = os.environ.get('IMAGEKIT_PUBLIC_KEY', '')
 IMAGEKIT_PRIVATE_KEY = os.environ.get('IMAGEKIT_PRIVATE_KEY', '')
 IMAGEKIT_URL_ENDPOINT = os.environ.get('IMAGEKIT_URL_ENDPOINT', '')
-IMAGEKIT_FOLDER = os.environ.get('IMAGEKIT_FOLDER', 'faziletkitab')
+IMAGEKIT_FOLDER = os.environ.get('IMAGEKIT_FOLDER', 'dostumkitab')
 
 # Production ImageKit fallback
 if not IMAGEKIT_ENABLED:
