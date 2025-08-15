@@ -77,31 +77,11 @@ class LogoAdmin(admin.ModelAdmin):
         # Navbar logo yüklə
         if 'navbar_logo' in form.changed_data and obj.navbar_logo:
             from lib.imagekit_utils import imagekit_manager
-            
-            # Faylı yenidən yarat - Django admin-də fayl pointer-i pozulur
-            from django.core.files import File
-            import tempfile
-            import os
-            
-            # Temporary file yarat
-            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                for chunk in obj.navbar_logo.chunks():
-                    temp_file.write(chunk)
-                temp_file.flush()
-                
-                # Temporary file-i Django File obyekti kimi aç
-                with open(temp_file.name, 'rb') as f:
-                    django_file = File(f, name=obj.navbar_logo.name)
-                    
-                    result = imagekit_manager.upload_image(
-                        django_file, 
-                        folder_path='navbar',
-                        filename=f"navbar_logo_{obj.id}"
-                    )
-                
-                # Temporary file-i sil
-                os.unlink(temp_file.name)
-            
+            result = imagekit_manager.upload_image(
+                obj.navbar_logo, 
+                folder_path='site/navbar',
+                filename=f"navbar_logo_{obj.id}"
+            )
             if result['success']:
                 obj.navbar_logo_imagekit_url = result['url']
                 obj.save(update_fields=['navbar_logo_imagekit_url'])
@@ -112,31 +92,11 @@ class LogoAdmin(admin.ModelAdmin):
         # Footer logo yüklə
         if 'footer_logo' in form.changed_data and obj.footer_logo:
             from lib.imagekit_utils import imagekit_manager
-            
-            # Faylı yenidən yarat - Django admin-də fayl pointer-i pozulur
-            from django.core.files import File
-            import tempfile
-            import os
-            
-            # Temporary file yarat
-            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                for chunk in obj.footer_logo.chunks():
-                    temp_file.write(chunk)
-                temp_file.flush()
-                
-                # Temporary file-i Django File obyekti kimi aç
-                with open(temp_file.name, 'rb') as f:
-                    django_file = File(f, name=obj.footer_logo.name)
-                    
-                    result = imagekit_manager.upload_image(
-                        django_file, 
-                        folder_path='footer',
-                        filename=f"footer_logo_{obj.id}"
-                    )
-                
-                # Temporary file-i sil
-                os.unlink(temp_file.name)
-            
+            result = imagekit_manager.upload_image(
+                obj.footer_logo, 
+                folder_path='site/footer',
+                filename=f"footer_logo_{obj.id}"
+            )
             if result['success']:
                 obj.footer_logo_imagekit_url = result['url']
                 obj.save(update_fields=['footer_logo_imagekit_url'])

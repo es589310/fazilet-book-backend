@@ -5,8 +5,6 @@ from .models import SiteSettings, Logo
 from lib.imagekit_utils import upload_logo_to_imagekit, delete_logo_from_imagekit
 import logging
 import os
-import tempfile
-from django.core.files import File
 
 logger = logging.getLogger(__name__)
 
@@ -31,24 +29,7 @@ def handle_logo_upload(sender, instance, created, **kwargs):
         # Əgər ImageKit URL-i yoxdursa və ya dəyişibsə yüklə
         if not instance.navbar_logo_imagekit_url or created:
             print("Uploading navbar logo to ImageKit via signal...")
-            
-            # Faylı yenidən yarat - Django admin-də fayl pointer-i pozulur
-            
-            # Temporary file yarat
-            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                for chunk in instance.navbar_logo.chunks():
-                    temp_file.write(chunk)
-                temp_file.flush()
-                
-                # Temporary file-i Django File obyekti kimi aç
-                with open(temp_file.name, 'rb') as f:
-                    django_file = File(f, name=instance.navbar_logo.name)
-                    
-                    result = upload_logo_to_imagekit(django_file, 'navbar')
-                
-                # Temporary file-i sil
-                os.unlink(temp_file.name)
-            
+            result = upload_logo_to_imagekit(instance.navbar_logo, 'site/navbar')
             print(f"Navbar logo upload result: {result}")
             
             if result['success']:
@@ -70,24 +51,7 @@ def handle_logo_upload(sender, instance, created, **kwargs):
         # Əgər ImageKit URL-i yoxdursa və ya dəyişibsə yüklə
         if not instance.footer_logo_imagekit_url or created:
             print("Uploading footer logo to ImageKit via signal...")
-            
-            # Faylı yenidən yarat - Django admin-də fayl pointer-i pozulur
-            
-            # Temporary file yarat
-            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                for chunk in instance.footer_logo.chunks():
-                    temp_file.write(chunk)
-                temp_file.flush()
-                
-                # Temporary file-i Django File obyekti kimi aç
-                with open(temp_file.name, 'rb') as f:
-                    django_file = File(f, name=instance.footer_logo.name)
-                    
-                    result = upload_logo_to_imagekit(django_file, 'footer')
-                
-                # Temporary file-i sil
-                os.unlink(temp_file.name)
-            
+            result = upload_logo_to_imagekit(instance.footer_logo, 'site/footer')
             print(f"Footer logo upload result: {result}")
             
             if result['success']:
