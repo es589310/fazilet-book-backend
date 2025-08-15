@@ -63,9 +63,13 @@ class ImageKitManager:
                 response_fields=["is_private_file", "tags", "custom_coordinates", "custom_metadata"]
             )
             
-            # Upload file
+            # Faylı düzgün emal et - bytes olaraq oxu
+            image_file.seek(0)  # Faylın başlanğıcına qayıt
+            file_content = image_file.read()
+            
+            # Upload file using bytes content
             upload = imagekit.upload_file(
-                file=image_file,
+                file=file_content,
                 file_name=filename,
                 options=options
             )

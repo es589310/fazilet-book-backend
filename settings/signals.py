@@ -29,6 +29,10 @@ def handle_logo_upload(sender, instance, created, **kwargs):
         # Əgər ImageKit URL-i yoxdursa və ya dəyişibsə yüklə
         if not instance.navbar_logo_imagekit_url or created:
             print("Uploading navbar logo to ImageKit via signal...")
+            
+            # Faylı yenidən oxu
+            instance.navbar_logo.seek(0)
+            
             result = upload_logo_to_imagekit(instance.navbar_logo, 'navbar')  # 'site/navbar' əvəzinə sadəcə 'navbar'
             print(f"Navbar logo upload result: {result}")
             
@@ -51,6 +55,10 @@ def handle_logo_upload(sender, instance, created, **kwargs):
         # Əgər ImageKit URL-i yoxdursa və ya dəyişibsə yüklə
         if not instance.footer_logo_imagekit_url or created:
             print("Uploading footer logo to ImageKit via signal...")
+            
+            # Faylı yenidən oxu
+            instance.footer_logo.seek(0)
+            
             result = upload_logo_to_imagekit(instance.footer_logo, 'footer')  # 'site/footer' əvəzinə sadəcə 'footer'
             print(f"Footer logo upload result: {result}")
             

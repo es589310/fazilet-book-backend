@@ -77,6 +77,10 @@ class LogoAdmin(admin.ModelAdmin):
         # Navbar logo yüklə
         if 'navbar_logo' in form.changed_data and obj.navbar_logo:
             from lib.imagekit_utils import imagekit_manager
+            
+            # Faylı yenidən oxu
+            obj.navbar_logo.seek(0)
+            
             result = imagekit_manager.upload_image(
                 obj.navbar_logo, 
                 folder_path='navbar',  # 'site/navbar' əvəzinə sadəcə 'navbar'
@@ -92,6 +96,10 @@ class LogoAdmin(admin.ModelAdmin):
         # Footer logo yüklə
         if 'footer_logo' in form.changed_data and obj.footer_logo:
             from lib.imagekit_utils import imagekit_manager
+            
+            # Faylı yenidən oxu
+            obj.footer_logo.seek(0)
+            
             result = imagekit_manager.upload_image(
                 obj.footer_logo, 
                 folder_path='footer',  # 'site/footer' əvəzinə sadəcə 'footer'
