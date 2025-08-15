@@ -63,13 +63,12 @@ class ImageKitManager:
                 response_fields=["is_private_file", "tags", "custom_coordinates", "custom_metadata"]
             )
             
-            # Faylı düzgün emal et - bytes olaraq oxu
+            # Faylı düzgün emal et - seek(0) və sonra birbaşa yüklə
             image_file.seek(0)  # Faylın başlanğıcına qayıt
-            file_content = image_file.read()
             
-            # Upload file using bytes content
+            # Upload file directly - ImageKit Django UploadedFile-i düzgün emal edir
             upload = imagekit.upload_file(
-                file=file_content,
+                file=image_file,
                 file_name=filename,
                 options=options
             )
