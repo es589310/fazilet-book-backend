@@ -5,6 +5,8 @@ from .models import SiteSettings, Logo
 from lib.imagekit_utils import upload_logo_to_imagekit, delete_logo_from_imagekit
 import logging
 import os
+import tempfile
+from django.core.files import File
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +33,6 @@ def handle_logo_upload(sender, instance, created, **kwargs):
             print("Uploading navbar logo to ImageKit via signal...")
             
             # Faylı yenidən yarat - Django admin-də fayl pointer-i pozulur
-            from django.core.files import File
-            import tempfile
-            import os
             
             # Temporary file yarat
             with tempfile.NamedTemporaryFile(delete=False) as temp_file:
@@ -73,9 +72,6 @@ def handle_logo_upload(sender, instance, created, **kwargs):
             print("Uploading footer logo to ImageKit via signal...")
             
             # Faylı yenidən yarat - Django admin-də fayl pointer-i pozulur
-            from django.core.files import File
-            import tempfile
-            import os
             
             # Temporary file yarat
             with tempfile.NamedTemporaryFile(delete=False) as temp_file:
