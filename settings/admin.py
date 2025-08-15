@@ -79,7 +79,7 @@ class LogoAdmin(admin.ModelAdmin):
             from lib.imagekit_utils import imagekit_manager
             result = imagekit_manager.upload_image(
                 obj.navbar_logo, 
-                folder_path='site/navbar',
+                folder_path='navbar',  # 'site/navbar' əvəzinə sadəcə 'navbar'
                 filename=f"navbar_logo_{obj.id}"
             )
             if result['success']:
@@ -94,7 +94,7 @@ class LogoAdmin(admin.ModelAdmin):
             from lib.imagekit_utils import imagekit_manager
             result = imagekit_manager.upload_image(
                 obj.footer_logo, 
-                folder_path='site/footer',
+                folder_path='footer',  # 'site/footer' əvəzinə sadəcə 'footer'
                 filename=f"footer_logo_{obj.id}"
             )
             if result['success']:

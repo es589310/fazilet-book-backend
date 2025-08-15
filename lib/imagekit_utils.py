@@ -55,11 +55,11 @@ class ImageKitManager:
             
             # Prepare upload options
             if not filename:
-                filename = f"{folder_path}_{image_file.name}"
+                filename = f"{folder_path.replace('/', '_')}_{image_file.name}"
             
             options = UploadFileRequestOptions(
                 use_unique_file_name=True,
-                folder=f"{self.folder}/{folder_path}",
+                folder=f"{self.folder}/{folder_path}",  # folder_path artıq sadə qovluq adıdır
                 response_fields=["is_private_file", "tags", "custom_coordinates", "custom_metadata"]
             )
             
@@ -106,9 +106,10 @@ class ImageKitManager:
         """
         try:
             if not filename:
-                filename = f"{folder_path}_{image_file.name}"
+                filename = f"{folder_path.replace('/', '_')}_{image_file.name}"
             
             # Create directory if it doesn't exist
+            # folder_path artıq tam yol olduğu üçün onu birbaşa istifadə edirik
             media_path = os.path.join(settings.MEDIA_ROOT, folder_path)
             os.makedirs(media_path, exist_ok=True)
             
