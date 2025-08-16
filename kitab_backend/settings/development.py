@@ -7,7 +7,7 @@ from .base import *
 
 # Development Security Settings
 DEBUG = True
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here')
+SECRET_KEY = env('SECRET_KEY', default='django-insecure-your-secret-key-here')
 
 # Development Hosts
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
