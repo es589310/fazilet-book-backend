@@ -32,11 +32,11 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 
 # Production Hosts
-ALLOWED_HOSTS_STR = os.environ.get('ALLOWED_HOSTS', 'dostumkitab.az,www.dostumkitab.az,dostumkitabapp-bb96d7362d57.herokuapp.com,dostumkitabapp-backend-b9b3b208224b.herokuapp.com')
+ALLOWED_HOSTS_STR = os.environ.get('ALLOWED_HOSTS', 'dostumkitab.az,www.dostumkitab.az,dostumkitabapp-bb96d7362d57.herokuapp.com,dostumkitabapp-backend-b9b3b208224b.herokuapp.com,dostumkitabapp-backend-eu-47b73694c0c1.herokuapp.com')
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(',')]
 
 # Production CORS
-CORS_ALLOWED_ORIGINS_STR = os.environ.get('CORS_ALLOWED_ORIGINS', 'https://dostumkitab.az,https://www.dostumkitab.az,https://dostumkitabapp-bb96d7362d57.herokuapp.com,https://dostumkitabapp-backend-b9b3b208224b.herokuapp.com')
+CORS_ALLOWED_ORIGINS_STR = os.environ.get('CORS_ALLOWED_ORIGINS', 'https://dostumkitab.az,https://www.dostumkitab.az,https://dostumkitabapp-bb96d7362d57.herokuapp.com,https://dostumkitabapp-backend-b9b3b208224b.herokuapp.com,https://dostumkitabapp-backend-eu-47b73694c0c1.herokuapp.com')
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS_STR.split(',')]
 
 # Database Configuration - Heroku PostgreSQL

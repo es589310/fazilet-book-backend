@@ -109,7 +109,8 @@ ALLOWED_HOSTS = [
     '0.0.0.0',
     'dostumkitab.az',
     'www.dostumkitab.az',
-    'dostumkitabapp-backend-b9b3b208224b.herokuapp.com',  # Yeni Heroku domain
+    'dostumkitabapp-backend-b9b3b208224b.herokuapp.com',  # Köhnə Heroku domain
+    'dostumkitabapp-backend-eu-47b73694c0c1.herokuapp.com',  # Yeni EU Heroku domain
     '*.herokuapp.com',  # Bütün Heroku subdomain-lər
 ]
 
