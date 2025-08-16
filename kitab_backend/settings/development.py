@@ -24,11 +24,11 @@ CORS_ALLOWED_ORIGINS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='kitabdb'),
-        'USER': config('DB_USER', default='kitabb_user'),
-        'PASSWORD': config('DB_PASSWORD', default='1a2b3d'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+        'NAME': env('DB_NAME', default='kitabdb'),
+        'USER': env('DB_USER', default='kitabb_user'),
+        'PASSWORD': env('DB_PASSWORD', default='1a2b3d'),
+        'HOST': env('DB_HOST', default='localhost'),
+        'PORT': env('DB_PORT', default='5432'),
         'OPTIONS': {
             'sslmode': 'disable',
         },
@@ -69,11 +69,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # ImageKit Configuration - Development
-IMAGEKIT_ENABLED = config('IMAGEKIT_ENABLED', default=False, cast=bool)
-IMAGEKIT_PUBLIC_KEY = config('IMAGEKIT_PUBLIC_KEY', default='')
-IMAGEKIT_PRIVATE_KEY = config('IMAGEKIT_PRIVATE_KEY', default='')
-IMAGEKIT_URL_ENDPOINT = config('IMAGEKIT_URL_ENDPOINT', default='')
-IMAGEKIT_FOLDER = config('IMAGEKIT_FOLDER', default='dostumkitab')
+IMAGEKIT_ENABLED = env.bool('IMAGEKIT_ENABLED', default=False)
+IMAGEKIT_PUBLIC_KEY = env('IMAGEKIT_PUBLIC_KEY', default='')
+IMAGEKIT_PRIVATE_KEY = env('IMAGEKIT_PRIVATE_KEY', default='')
+IMAGEKIT_URL_ENDPOINT = env('IMAGEKIT_URL_ENDPOINT', default='')
+IMAGEKIT_FOLDER = env('IMAGEKIT_FOLDER', default='dostumkitab')
 
 # Development ImageKit fallback
 if not IMAGEKIT_ENABLED:
