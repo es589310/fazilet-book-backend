@@ -1,1 +1,1 @@
-web: gunicorn django-bookstore.wsgi --workers 1 --timeout 30 --bind 0.0.0.0:$PORT --log-file - 
+web: gunicorn django_bookstore.wsgi --workers 1 --timeout 30 --bind 0.0.0.0:$PORT
