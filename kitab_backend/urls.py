@@ -2,9 +2,10 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import connection
 import django.utils.timezone
+import os
 
 # Admin konfiqurasiyasını import et
 from . import admin as admin_config
@@ -13,6 +14,17 @@ from . import admin as admin_config
 admin.site.site_header = settings.ADMIN_SITE_HEADER
 admin.site.site_title = settings.ADMIN_SITE_TITLE
 admin.site.index_title = settings.ADMIN_INDEX_TITLE
+
+# Favicon view
+def favicon_view(request):
+    """Serve favicon.ico to prevent 404 errors"""
+    favicon_path = os.path.join(settings.STATIC_ROOT or settings.STATICFILES_DIRS[0], 'favicon.ico')
+    if os.path.exists(favicon_path):
+        with open(favicon_path, 'rb') as f:
+            return HttpResponse(f.read(), content_type='image/x-icon')
+    else:
+        # Return empty favicon if file doesn't exist
+        return HttpResponse(b'', content_type='image/x-icon')
 
 # Health check view
 def health_check(request):
@@ -57,6 +69,7 @@ urlpatterns = [
     path('api/orders/', include('orders.urls')),
     path('api/contact/', include('contact.urls')),
     path('health/', health_check, name='health_check'),
+    path('favicon.ico', favicon_view, name='favicon'),
 ]
 
 # Static and Media files serving
