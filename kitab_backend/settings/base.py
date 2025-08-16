@@ -5,7 +5,11 @@ Bu faylı development və production settings faylları import edir
 
 import os
 from pathlib import Path
-from decouple import config
+import environ
+import dj_database_url
+
+env = environ.Env()
+environ.Env.read_env()  # local .env üçün
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -67,6 +71,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'kitab_backend.wsgi.application'
+
+# Database configuration
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL')  # Heroku avtomatik bu env dəyişəni yaradır
+    )
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
