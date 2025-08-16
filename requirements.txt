@@ -8,4 +8,4 @@ requests==2.31.0
 Pillow==11.3.0
 gunicorn==20.1.0
 python-decouple==3.8
-djangorestframework-simplejwt==6.1.0
+djangorestframework-simplejwt==5.5.1
