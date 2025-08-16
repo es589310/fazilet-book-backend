@@ -101,6 +101,17 @@ TIME_ZONE = 'Asia/Baku'
 USE_I18N = True
 USE_TZ = True
 
+# Security settings
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+    'dostumkitab.az',
+    'www.dostumkitab.az',
+    'dostumkitabapp-backend-b9b3b208224b.herokuapp.com',  # Yeni Heroku domain
+    '*.herokuapp.com',  # Bütün Heroku subdomain-lər
+]
+
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Heroku üçün
