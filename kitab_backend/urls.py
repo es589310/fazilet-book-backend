@@ -32,7 +32,6 @@ def health_check(request):
     response_data = {
         "status": "healthy",
         "message": "Django backend is running successfully",
-        "timestamp": django.utils.timezone.now().isoformat(),
         "version": "1.0.0"
     }
     
