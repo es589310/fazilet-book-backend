@@ -1,233 +1,233 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+# # dependencies
+# /node_modules
 
-# next.js
-/.next/
-/out/
+# # next.js
+# /.next/
+# /out/
 
-# production
-/build
+# # production
+# /build
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+# # debug
+# npm-debug.log*
+# yarn-debug.log*
+# yarn-error.log*
+# .pnpm-debug.log*
 
-# vercel
-.vercel
+# # vercel
+# .vercel
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# # typescript
+# *.tsbuildinfo
+# next-env.d.ts
 
-# Python
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+# # Python
+# *.py[cod]
+# *$py.class
+# *.so
+# .Python
+# build/
+# develop-eggs/
+# dist/
+# downloads/
+# eggs/
+# .eggs/
+# lib/
+# lib64/
+# parts/
+# sdist/
+# var/
+# wheels/
+# share/python-wheels/
+# *.egg-info/
+# .installed.cfg
+# *.egg
+# MANIFEST
 
-# Django
-*.log
-*.pot
-*.pyc
-__pycache__/
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-media/
-staticfiles/
+# # Django
+# *.log
+# *.pot
+# *.pyc
+# __pycache__/
+# local_settings.py
+# db.sqlite3
+# db.sqlite3-journal
+# media/
+# staticfiles/
 
-# Virtual Environment
-venv/
-env/
-ENV/
-env.bak/
-venv.bak/
+# # Virtual Environment
+# venv/
+# env/
+# ENV/
+# env.bak/
+# venv.bak/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# # IDE
+# .vscode/
+# .idea/
+# *.swp
+# *.swo
+# *~
 
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# # OS
+# .DS_Store
+# .DS_Store?
+# ._*
+# .Spotlight-V100
+# .Trashes
+# ehthumbs.db
+# Thumbs.db
 
-# Database
-*.db
-*.sqlite3
+# # Database
+# *.db
+# *.sqlite3
 
-# Logs
-debug.log
-*.log
-logs/
+# # Logs
+# debug.log
+# *.log
+# logs/
 
-# 🔒 CRITICAL SECURITY - Environment Variables
-.env
-.env.local
-.env.development
-.env.production
-.env.staging
-.env.test
-.env.*.local
-.env.backup
-.env.old
+# # 🔒 CRITICAL SECURITY - Environment Variables
+# .env
+# .env.local
+# .env.development
+# .env.production
+# .env.staging
+# .env.test
+# .env.*.local
+# .env.backup
+# .env.old
 
-# 🔒 CRITICAL SECURITY - Production Credentials
-credentials.json
-service-account.json
-*.pem
-*.key
-*.crt
-*.p12
-*.pfx
+# # 🔒 CRITICAL SECURITY - Production Credentials
+# credentials.json
+# service-account.json
+# *.pem
+# *.key
+# *.crt
+# *.p12
+# *.pfx
 
-# 🔒 CRITICAL SECURITY - Database Files
-*.sql
-*.sqlite
-*.db
-*.sqlite3
-*.sqlite3-journal
-*.sqlite3-wal
-*.sqlite3-shm
+# # 🔒 CRITICAL SECURITY - Database Files
+# *.sql
+# *.sqlite
+# *.db
+# *.sqlite3
+# *.sqlite3-journal
+# *.sqlite3-wal
+# *.sqlite3-shm
 
-# 🔒 CRITICAL SECURITY - Cache & Temporary Files
-.cache/
-tmp/
-temp/
-*.tmp
-*.temp
-*.cache
+# # 🔒 CRITICAL SECURITY - Cache & Temporary Files
+# .cache/
+# tmp/
+# temp/
+# *.tmp
+# *.temp
+# *.cache
 
-# 🔒 CRITICAL SECURITY - Log Files
-*.log
-logs/
-log/
-debug.log
-error.log
-access.log
-nginx.log
-gunicorn.log
+# # 🔒 CRITICAL SECURITY - Log Files
+# *.log
+# logs/
+# log/
+# debug.log
+# error.log
+# access.log
+# nginx.log
+# gunicorn.log
 
-# 🔒 CRITICAL SECURITY - Backup Files
-*.backup
-*.bak
-*.old
-*.orig
-*.save
+# # 🔒 CRITICAL SECURITY - Backup Files
+# *.backup
+# *.bak
+# *.old
+# *.orig
+# *.save
 
-# 🔒 CRITICAL SECURITY - Configuration Files
-config.local.py
-settings.local.py
-local_config.py
-production.py
-staging.py
+# # 🔒 CRITICAL SECURITY - Configuration Files
+# config.local.py
+# settings.local.py
+# local_config.py
+# production.py
+# staging.py
 
-# 🔒 CRITICAL SECURITY - SSL Certificates
-ssl/
-certificates/
-*.crt
-*.key
-*.pem
-*.p12
-*.pfx
+# # 🔒 CRITICAL SECURITY - SSL Certificates
+# ssl/
+# certificates/
+# *.crt
+# *.key
+# *.pem
+# *.p12
+# *.pfx
 
-# 🔒 CRITICAL SECURITY - SSH Keys
-.ssh/
-id_rsa
-id_rsa.pub
-id_ed25519
-id_ed25519.pub
+# # 🔒 CRITICAL SECURITY - SSH Keys
+# .ssh/
+# id_rsa
+# id_rsa.pub
+# id_ed25519
+# id_ed25519.pub
 
-# 🔒 CRITICAL SECURITY - Docker Secrets
-.docker/
-docker-compose.override.yml
-docker-compose.local.yml
+# # 🔒 CRITICAL SECURITY - Docker Secrets
+# .docker/
+# docker-compose.override.yml
+# docker-compose.local.yml
 
-# 🔒 CRITICAL SECURITY - Heroku
-.heroku/
-Procfile.local
+# # 🔒 CRITICAL SECURITY - Heroku
+# .heroku/
+# Procfile.local
 
-# 🔒 CRITICAL SECURITY - AWS
-.aws/
-aws-credentials
-*.pem
+# # 🔒 CRITICAL SECURITY - AWS
+# .aws/
+# aws-credentials
+# *.pem
 
-# 🔒 CRITICAL SECURITY - Google Cloud
-.gcloud/
-service-account-*.json
+# # 🔒 CRITICAL SECURITY - Google Cloud
+# .gcloud/
+# service-account-*.json
 
-# 🔒 CRITICAL SECURITY - Azure
-.azure/
-azure-credentials
+# # 🔒 CRITICAL SECURITY - Azure
+# .azure/
+# azure-credentials
 
-# 🔒 CRITICAL SECURITY - Monitoring & Analytics
-sentry/
-newrelic/
-datadog/
-*.yml
-*.yaml
+# # 🔒 CRITICAL SECURITY - Monitoring & Analytics
+# sentry/
+# newrelic/
+# datadog/
+# *.yml
+# *.yaml
 
-# 🔒 CRITICAL SECURITY - Build Artifacts
-dist/
-build/
-*.tar.gz
-*.zip
-*.rar
+# # 🔒 CRITICAL SECURITY - Build Artifacts
+# dist/
+# build/
+# *.tar.gz
+# *.zip
+# *.rar
 
-# 🔒 CRITICAL SECURITY - Test Coverage
-.coverage
-htmlcov/
-.pytest_cache/
-.tox/
+# # 🔒 CRITICAL SECURITY - Test Coverage
+# .coverage
+# htmlcov/
+# .pytest_cache/
+# .tox/
 
-# 🔒 CRITICAL SECURITY - IDE Settings
-.vscode/settings.json
-.idea/workspace.xml
-*.sublime-project
-*.sublime-workspace
+# # 🔒 CRITICAL SECURITY - IDE Settings
+# .vscode/settings.json
+# .idea/workspace.xml
+# *.sublime-project
+# *.sublime-workspace
 
-# 🔒 CRITICAL SECURITY - OS Generated Files
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-*.lnk
+# # 🔒 CRITICAL SECURITY - OS Generated Files
+# Thumbs.db
+# ehthumbs.db
+# Desktop.ini
+# $RECYCLE.BIN/
+# *.lnk
 
-# 🔒 CRITICAL SECURITY - Temporary Files
-*.swp
-*.swo
-*~
-*.tmp
-*.temp
-*.cache
+# # 🔒 CRITICAL SECURITY - Temporary Files
+# *.swp
+# *.swo
+# *~
+# *.tmp
+# *.temp
+# *.cache
 
-venv/
-# 🔒 CRITICAL SECURITY - Miscellaneous
+# venv/
+# # 🔒 CRITICAL SECURITY - Miscellaneous
