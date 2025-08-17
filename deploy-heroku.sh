@@ -66,7 +66,7 @@ heroku config:set IS_HEROKU=True --app "$APP_NAME"
 
 # Production Domain
 heroku config:set ALLOWED_HOSTS="faziletkitab.az,www.faziletkitab.az,$APP_NAME.herokuapp.com" --app "$APP_NAME"
-heroku config:set CORS_ALLOWED_ORIGINS="https://faziletkitab.az,https://www.faziletkitab.az" --app "$APP_NAME"
+heroku config:set CORS_ALLOWED_ORIGINS="https://dostumkitab.az,https://www.dostumkitab.az" --app "$APP_NAME"
 
 # Email Configuration
 heroku config:set EMAIL_HOST="smtp.gmail.com" --app "$APP_NAME"
