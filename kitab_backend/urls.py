@@ -29,13 +29,7 @@ def favicon_view(request):
 # Health check view
 def health_check(request):
     """Production health check endpoint"""
-    response_data = {
-        "status": "healthy",
-        "message": "Django backend is running successfully",
-        "version": "1.0.0"
-    }
-    
-    return JsonResponse(response_data, status=200)
+    return HttpResponse("Django backend is running successfully!", content_type="text/plain")
 
 # Production URL patterns
 urlpatterns = [
