@@ -1,61 +1,29 @@
-# heroku.py – Heroku Production Settings
-
+# kitab_backend/settings/heroku.py
 import os
-from pathlib import Path
+from .base import *  # Base settings-i import edin
 
-# Base directory
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# DEBUG
+# Heroku-specific settings
 DEBUG = os.environ.get("DEBUG", "False") == "True"
-
-# SECRET_KEY
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-default-secret-key")
 
-# IS_HEROKU flag (Heroku env variable)
-IS_HEROKU = os.environ.get("IS_HEROKU", "False") == "True"
-
-# Allowed Hosts
-# 1. Env-dən oxu
-allowed_hosts_env = os.environ.get(
-    "ALLOWED_HOSTS",
-    "localhost,127.0.0.1"
-)
-ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(",")]
-
-# 2. Heroku-da *.herokuapp.com əlavə et
-if IS_HEROKU:
-    heroku_app_host = os.environ.get("HEROKU_APP_NAME")
-    if heroku_app_host:
-        ALLOWED_HOSTS.append(f"{heroku_app_host}.herokuapp.com")
-
-# CORS
-cors_origins_env = os.environ.get("CORS_ALLOWED_ORIGINS", "")
-CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
-
 # Database (Heroku DATABASE_URL)
-import dj_database_url
 DATABASES = {
     "default": dj_database_url.config(
         default=os.environ.get("DATABASE_URL")
     )
 }
 
-# Static and Media files (WhiteNoise for Heroku)
-STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+# Allowed Hosts
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# CORS
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",") if os.environ.get("CORS_ALLOWED_ORIGINS") else []
 
-# WhiteNoise settings
-MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-    # Əvvəlki middleware-lər
-]
+# Static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# WhiteNoise configuration for Heroku
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Email
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
