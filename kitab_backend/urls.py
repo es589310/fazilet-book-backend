@@ -62,6 +62,7 @@ def health_check(request):
 
 # Production URL patterns
 urlpatterns = [
+    path('', health_check, name='root'),  # Root path
     path('admin/', admin.site.urls),
     path('api/auth/', include('users.urls')),
     path('api/books/', include('books.urls')),
