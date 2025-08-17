@@ -34,12 +34,8 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", EMAIL_HOST_USER)
 
-# ImageKit
-IMAGEKIT_ENABLED = os.environ.get("IMAGEKIT_ENABLED", "False") == "True"
-IMAGEKIT_PUBLIC_KEY = os.environ.get("IMAGEKIT_PUBLIC_KEY", "")
-IMAGEKIT_PRIVATE_KEY = os.environ.get("IMAGEKIT_PRIVATE_KEY", "")
-IMAGEKIT_URL_ENDPOINT = os.environ.get("IMAGEKIT_URL_ENDPOINT", "")
-IMAGEKIT_FOLDER = os.environ.get("IMAGEKIT_FOLDER", "books")
+# ImageKit configuration is now imported from base.py
+# No need to duplicate here
 
 # Logging
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")

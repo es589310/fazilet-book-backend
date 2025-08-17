@@ -235,4 +235,7 @@ def delete_image(file_id: str) -> bool:
 
 def get_image_info(file_id: str) -> Optional[Dict]:
     """Convenience function for getting image info"""
-    return imagekit_manager.get_image_url(file_id) 
+    return imagekit_manager.get_image_url(file_id)
+
+# Create global instance
+imagekit_manager = ImageKitManager() 

@@ -127,6 +127,13 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Media files
 MEDIA_URL = '/media/'
 
+# ImageKit Configuration
+IMAGEKIT_ENABLED = os.environ.get('IMAGEKIT_ENABLED', 'False') == 'True'
+IMAGEKIT_PUBLIC_KEY = os.environ.get('IMAGEKIT_PUBLIC_KEY', '')
+IMAGEKIT_PRIVATE_KEY = os.environ.get('IMAGEKIT_PRIVATE_KEY', '')
+IMAGEKIT_URL_ENDPOINT = os.environ.get('IMAGEKIT_URL_ENDPOINT', '')
+IMAGEKIT_FOLDER = os.environ.get('IMAGEKIT_FOLDER', 'books')
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
