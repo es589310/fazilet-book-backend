@@ -18,10 +18,10 @@ logger = logging.getLogger(__name__)
 
 # Production rate limiting
 class ContactMessageThrottle(UserRateThrottle):
-    rate = '10/hour'  # Authenticated users: 10 requests per hour
+    rate = '60/hour'  # Authenticated users: 60 requests per hour (dəqiqədə 1)
 
 class ContactMessageAnonThrottle(AnonRateThrottle):
-    rate = '5/hour'   # Anonymous users: 5 requests per hour
+    rate = '40/hour'   # Anonymous users: 40 requests per hour (1.5 dəqiqədə 1)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
