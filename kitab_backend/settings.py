@@ -156,6 +156,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:3001",
     "http://127.0.0.1:3001",
+    "https://dostumkitab.az",
+    "https://dostumkitabapp-frontend-eu-36f5e7d23d85.herokuapp.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
