@@ -11,7 +11,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'dostumkitabapp-backend-eu-47b73694c0c1.herokuapp.com']
 
 # Application definition
 DJANGO_APPS = [
@@ -71,15 +71,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'kitab_backend.wsgi.application'
 
+# Heroku üçün database konfiqurasiyası
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='kitabdb'),  # Dəyişdirmək lazım deyil, artıq kitabdb-dir
-        'USER': config('DB_USER', default='kitabb_user'),
-        'PASSWORD': config('DB_PASSWORD', default='1a2b3d'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL', default='postgresql://kitabb_user:1a2b3d@localhost:5432/kitabdb')
+    )
 }
 
 
