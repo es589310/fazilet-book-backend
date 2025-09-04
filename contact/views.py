@@ -7,7 +7,14 @@ from django.conf import settings
 from django.utils import timezone
 from .models import ContactMessage, SocialMediaLink
 from .serializers import ContactMessageSerializer, SocialMediaLinkSerializer
-from lib.email_utils import send_contact_email
+
+# Email utils import-unu try-except ilə əhatə et
+try:
+    from lib.email_utils import send_contact_email
+    EMAIL_UTILS_AVAILABLE = True
+except ImportError:
+    EMAIL_UTILS_AVAILABLE = False
+    print("Warning: lib.email_utils not available, email features disabled")
 # import logging
 
 # logger = logging.getLogger(__name__)
@@ -95,6 +102,10 @@ def send_admin_notification(contact_message):
     """
     Admin-ə bildiriş email-i göndərir
     """
+    if not EMAIL_UTILS_AVAILABLE:
+        print("Email utils not available, skipping admin notification")
+        return False
+        
     try:
         # Yeni email utility istifadə edirik
         success = send_contact_email(

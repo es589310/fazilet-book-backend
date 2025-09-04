@@ -41,7 +41,13 @@ class CategoryAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         
         if 'image' in form.changed_data and obj.image:
-            from lib.imagekit_utils import imagekit_manager
+            try:
+                from lib.imagekit_utils import imagekit_manager
+                IMAGEKIT_AVAILABLE = True
+            except ImportError:
+                IMAGEKIT_AVAILABLE = False
+                print("Warning: lib.imagekit_utils not available, skipping image upload")
+                return
             result = imagekit_manager.upload_image(
                 obj.image, 
                 folder_path='categories',
@@ -90,7 +96,13 @@ class AuthorAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         
         if 'photo' in form.changed_data and obj.photo:
-            from lib.imagekit_utils import imagekit_manager
+            try:
+                from lib.imagekit_utils import imagekit_manager
+                IMAGEKIT_AVAILABLE = True
+            except ImportError:
+                IMAGEKIT_AVAILABLE = False
+                print("Warning: lib.imagekit_utils not available, skipping image upload")
+                return
             result = imagekit_manager.upload_image(
                 obj.photo, 
                 folder_path='authors',
@@ -191,7 +203,13 @@ class BookAdmin(admin.ModelAdmin):
         
         # Cover image yüklənməsi
         if 'cover_image' in form.changed_data and obj.cover_image:
-            from lib.imagekit_utils import imagekit_manager
+            try:
+                from lib.imagekit_utils import imagekit_manager
+                IMAGEKIT_AVAILABLE = True
+            except ImportError:
+                IMAGEKIT_AVAILABLE = False
+                print("Warning: lib.imagekit_utils not available, skipping image upload")
+                return
             result = imagekit_manager.upload_image(
                 obj.cover_image, 
                 folder_path='books/covers',
@@ -204,7 +222,13 @@ class BookAdmin(admin.ModelAdmin):
         
         # Back image yüklənməsi
         if 'back_image' in form.changed_data and obj.back_image:
-            from lib.imagekit_utils import imagekit_manager
+            try:
+                from lib.imagekit_utils import imagekit_manager
+                IMAGEKIT_AVAILABLE = True
+            except ImportError:
+                IMAGEKIT_AVAILABLE = False
+                print("Warning: lib.imagekit_utils not available, skipping image upload")
+                return
             result = imagekit_manager.upload_image(
                 obj.back_image, 
                 folder_path='books/backs',
@@ -287,7 +311,13 @@ class BannerAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         
         if 'image' in form.changed_data and obj.image:
-            from lib.imagekit_utils import imagekit_manager
+            try:
+                from lib.imagekit_utils import imagekit_manager
+                IMAGEKIT_AVAILABLE = True
+            except ImportError:
+                IMAGEKIT_AVAILABLE = False
+                print("Warning: lib.imagekit_utils not available, skipping image upload")
+                return
             result = imagekit_manager.upload_image(
                 obj.image, 
                 folder_path='banners',

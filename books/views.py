@@ -153,7 +153,16 @@ def upload_image_to_imagekit(request):
         folder_path = request.POST.get('folder', 'general')
         filename = request.POST.get('filename', None)
         
-        from lib.imagekit_utils import imagekit_manager
+        try:
+            from lib.imagekit_utils import imagekit_manager
+            IMAGEKIT_AVAILABLE = True
+        except ImportError:
+            IMAGEKIT_AVAILABLE = False
+            return Response({
+                'success': False,
+                'error': 'ImageKit not available'
+            }, status=500)
+            
         result = imagekit_manager.upload_image(
             image_file, 
             folder_path=folder_path,

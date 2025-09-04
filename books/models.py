@@ -135,9 +135,13 @@ class Book(models.Model):
     def get_optimized_cover_url(self, width=None, height=None, quality=80):
         """Optimizasiya edilmiş üz qabığı URL-ni qaytarır"""
         if self.cover_imagekit_url:
-            from lib.imagekit_utils import imagekit_manager
-            filename = self.cover_imagekit_url.split('/')[-1]
-            return imagekit_manager.optimize_image_url(filename, width, height, quality)
+            try:
+                from lib.imagekit_utils import imagekit_manager
+                filename = self.cover_imagekit_url.split('/')[-1]
+                return imagekit_manager.optimize_image_url(filename, width, height, quality)
+            except ImportError:
+                print("Warning: lib.imagekit_utils not available, returning original URL")
+                return self.get_cover_image_url()
         return self.get_cover_image_url()
     
     @property
