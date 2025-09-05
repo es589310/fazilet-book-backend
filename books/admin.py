@@ -318,10 +318,12 @@ class BannerAdmin(admin.ModelAdmin):
                 IMAGEKIT_AVAILABLE = False
                 print("Warning: lib.imagekit_utils not available, skipping image upload")
                 return
+            # Title None ola bilər, ona görə yoxlayırıq
+            title_safe = obj.title.replace(' ', '_') if obj.title else 'banner'
             result = imagekit_manager.upload_image(
                 obj.image, 
                 folder_path='banners',
-                filename=f"banner_{obj.id}_{obj.title.replace(' ', '_')}"
+                filename=f"banner_{obj.id}_{title_safe}"
             )
             if result['success']:
                 obj.imagekit_url = result['url']
