@@ -6,7 +6,14 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from .models import Address
 from .serializers import UserSerializer, UserRegistrationSerializer, AddressSerializer
-from lib.email_utils import send_welcome_email
+
+# Email utils import-unu try-except ilə əhatə et
+try:
+    from lib.email_utils import send_welcome_email
+    EMAIL_UTILS_AVAILABLE = True
+except ImportError:
+    EMAIL_UTILS_AVAILABLE = False
+    print("Warning: lib.email_utils not available, email features disabled")
 
 class RegisterView(generics.CreateAPIView):
     """İstifadəçi qeydiyyatı"""
@@ -20,11 +27,14 @@ class RegisterView(generics.CreateAPIView):
         user = serializer.save()
         
         # Xoş gəlmə emaili göndəririk
-        try:
-            send_welcome_email(user)
-        except Exception as e:
-            print(f"⚠️ Email göndərilmədi: {str(e)}")
-            # Email göndərilməsə də qeydiyyat uğurlu olur
+        if EMAIL_UTILS_AVAILABLE:
+            try:
+                send_welcome_email(user)
+            except Exception as e:
+                print(f"⚠️ Email göndərilmədi: {str(e)}")
+                # Email göndərilməsə də qeydiyyat uğurlu olur
+        else:
+            print("Email utils not available, skipping welcome email")
         
         # JWT token yaradırıq
         refresh = RefreshToken.for_user(user)

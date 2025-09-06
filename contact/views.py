@@ -1,36 +1,36 @@
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from django.core.exceptions import ObjectDoesNotExist
-import logging
-import concurrent.futures
-
 from .models import ContactMessage, SocialMediaLink
 from .serializers import ContactMessageSerializer, SocialMediaLinkSerializer
 
-# Production logging
-logger = logging.getLogger(__name__)
+# Email utils import-unu try-except ilə əhatə et
+try:
+    from lib.email_utils import send_contact_email
+    EMAIL_UTILS_AVAILABLE = True
+except ImportError:
+    EMAIL_UTILS_AVAILABLE = False
+    print("Warning: lib.email_utils not available, email features disabled")
+# import logging
 
-# Production rate limiting
-class ContactMessageThrottle(UserRateThrottle):
-    rate = '60/hour'  # Authenticated users: 60 requests per hour (dəqiqədə 1)
-
-class ContactMessageAnonThrottle(AnonRateThrottle):
-    rate = '40/hour'   # Anonymous users: 40 requests per hour (1.5 dəqiqədə 1)
+# logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@throttle_classes([ContactMessageAnonThrottle, ContactMessageThrottle])
 def send_contact_message(request):
     """
-    Contact mesajı göndərmək üçün endpoint - Production Ready
+    Contact mesajı göndərmək üçün endpoint
     """
     try:
+        # Debug: Gələn məlumatları log et
+        # logger.info(f"Contact request - User authenticated: {request.user.is_authenticated}")
+        # logger.info(f"Contact request - User: {request.user}")
+        # logger.info(f"Contact request - Data: {request.data}")
+        
         # Giriş olan istifadəçilər üçün request data-nı təmizlə
         data = request.data.copy()
         if request.user.is_authenticated:
@@ -39,6 +39,8 @@ def send_contact_message(request):
                 del data['name']
             if 'email' in data:
                 del data['email']
+        
+        # logger.info(f"Contact request - Cleaned data: {data}")
         
         # Serializer yaradırıq
         serializer = ContactMessageSerializer(
@@ -56,6 +58,9 @@ def send_contact_message(request):
                 contact_message.save()
             
             # Email-ləri paralel göndəririk
+            import asyncio
+            import concurrent.futures
+            
             with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                 admin_future = executor.submit(send_admin_notification, contact_message)
                 auto_reply_future = executor.submit(send_auto_reply, contact_message)
@@ -75,14 +80,11 @@ def send_contact_message(request):
             else:
                 response_message = "Mesajınız uğurla göndərildi. Tezliklə sizinlə əlaqə saxlayacağıq."
             
-            logger.info(f"Contact message sent successfully by user: {request.user if request.user.is_authenticated else 'anonymous'}")
-            
             return Response({
                 'message': response_message,
                 'success': True
             }, status=status.HTTP_201_CREATED)
         else:
-            logger.warning(f"Contact message validation failed: {serializer.errors}")
             return Response({
                 'message': 'Məlumatları düzgün doldurun',
                 'errors': serializer.errors,
@@ -90,7 +92,7 @@ def send_contact_message(request):
             }, status=status.HTTP_400_BAD_REQUEST)
             
     except Exception as e:
-        logger.error(f"Contact message error: {str(e)}", exc_info=True)
+        # logger.error(f"Contact message error: {str(e)}")
         return Response({
             'message': 'Xəta baş verdi. Zəhmət olmasa daha sonra yenidən cəhd edin.',
             'success': False
@@ -98,72 +100,35 @@ def send_contact_message(request):
 
 def send_admin_notification(contact_message):
     """
-    Admin-ə bildiriş email-i göndərir - Production Ready
+    Admin-ə bildiriş email-i göndərir
     """
+    if not EMAIL_UTILS_AVAILABLE:
+        print("Email utils not available, skipping admin notification")
+        return False
+        
     try:
-        # Try to use email utility, fallback to direct send_mail
-        try:
-            from lib.email_utils import send_contact_email
+        # Yeni email utility istifadə edirik
+        success = send_contact_email(
+            name=contact_message.sender_name,
+            email=contact_message.sender_email,
+            subject=contact_message.subject,
+            message=contact_message.message
+        )
+        
+        if success:
+            # logger.info(f"Admin notification sent successfully using new utility")
+            return True
+        else:
+            # logger.error("Admin notification failed using new utility")
+            return False
             
-            success = send_contact_email(
-                name=contact_message.sender_name,
-                email=contact_message.sender_email,
-                subject=contact_message.subject,
-                message=contact_message.message
-            )
-            
-            if success:
-                logger.info("Admin notification sent successfully using email utility")
-                return True
-            else:
-                logger.warning("Admin notification failed using email utility, trying fallback")
-                raise ImportError("Email utility failed")
-                
-        except ImportError:
-            # Fallback to direct send_mail
-            email_subject = f"Yeni müraciət: {contact_message.subject}"
-            
-            email_message = f"""
-Yeni müraciət alındı:
-
-Göndərən: {contact_message.sender_name}
-Email: {contact_message.sender_email}
-Mövzu: {contact_message.subject}
-Tarix: {contact_message.created_at.strftime('%d.%m.%Y %H:%M')}
-
-Mesaj:
-{contact_message.message}
-
----
-Bu email dostumkitab.az saytından avtomatik göndərilmişdir.
-            """
-            
-            # Get recipient email from settings or use default
-            recipient_email = getattr(settings, 'ADMIN_EMAIL', getattr(settings, 'DEFAULT_FROM_EMAIL', 'admin@dostumkitab.az'))
-            
-            # Send email with production settings
-            result = send_mail(
-                subject=email_subject,
-                message=email_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[recipient_email],
-                fail_silently=True,  # Production: don't fail on email errors
-            )
-            
-            if result:
-                logger.info(f"Admin notification sent successfully using fallback to {recipient_email}")
-                return True
-            else:
-                logger.warning(f"Admin notification failed using fallback to {recipient_email}")
-                return False
-                
     except Exception as e:
-        logger.error(f"Admin notification error: {str(e)}", exc_info=True)
+        # logger.error(f"Admin notification error: {str(e)}")
         return False
 
 def send_auto_reply(contact_message):
     """
-    Göndərənə avtomatik cavab göndərir - Production Ready
+    Göndərənə avtomatik cavab göndərir
     """
     try:
         # Giriş olan istifadəçilər üçün müraciət mesajı cavabı
@@ -207,49 +172,31 @@ dostumkitab.az komandası 🚀
             
             recipient_email = contact_message.sender_email
         
-        # Try to use email utility, fallback to direct send_mail
-        try:
-            from lib.email_utils import send_auto_reply_email
-            
-            success = send_auto_reply_email(
-                recipient_email=recipient_email,
-                name=contact_message.sender_name,
-                subject=contact_message.subject
-            )
-            
-            if success:
-                logger.info(f"Auto reply sent successfully using email utility to {recipient_email}")
-                return True
-            else:
-                logger.warning(f"Auto reply failed using email utility, trying fallback")
-                raise ImportError("Email utility failed")
-                
-        except ImportError:
-            # Fallback to direct send_mail
-            result = send_mail(
-                subject=subject,
-                message=message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[recipient_email],
-                fail_silently=True,  # Production: don't fail on email errors
-            )
-            
-            if result:
-                logger.info(f"Auto reply sent successfully using fallback to {recipient_email}")
-                return True
-            else:
-                logger.warning(f"Auto reply failed using fallback to {recipient_email}")
-                return False
-                
+        # Email konfiqurasiyasını log edirik
+        # logger.info(f"Email config - FROM: {settings.DEFAULT_FROM_EMAIL}, TO: {recipient_email}")
+        # logger.info(f"Email config - HOST: {settings.EMAIL_HOST}, PORT: {settings.EMAIL_PORT}")
+        # logger.info(f"Email config - USER: {settings.EMAIL_HOST_USER}")
+        
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[recipient_email],
+            fail_silently=False,
+        )
+        
+        # logger.info(f"Auto reply sent successfully to {recipient_email}")
+        return True
     except Exception as e:
-        logger.error(f"Auto reply error: {str(e)}", exc_info=True)
+        # logger.error(f"Auto reply error: {str(e)}")
+        # logger.error(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
         return False
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_social_media_links(request):
     """
-    Aktiv və gizlənməmiş sosial media linklərini qaytarır - Production Ready
+    Aktiv və gizlənməmiş sosial media linklərini qaytarır
     """
     try:
         links = SocialMediaLink.objects.filter(
@@ -264,7 +211,7 @@ def get_social_media_links(request):
         })
         
     except Exception as e:
-        logger.error(f"Social media links error: {str(e)}", exc_info=True)
+        # logger.error(f"Social media links error: {str(e)}")
         return Response({
             'message': 'Sosial media linkləri yüklənərkən xəta baş verdi.',
             'success': False
@@ -274,115 +221,59 @@ def get_social_media_links(request):
 @permission_classes([AllowAny])
 def get_site_settings(request):
     """
-    Sayt tənzimləmələrini qaytarır - Production Ready
+    Sayt tənzimləmələrini qaytarır
     """
     try:
-        # Try to import SiteSettings, fallback if not available
-        try:
-            from settings.models import SiteSettings
-            from settings.serializers import SiteSettingsSerializer
-            
-            site_settings = SiteSettings.objects.filter(is_active=True).first()
-            if site_settings:
-                serializer = SiteSettingsSerializer(site_settings)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response({
-                    'message': 'Sayt tənzimləmələri tapılmadı.',
-                    'success': False
-                }, status=status.HTTP_404_NOT_FOUND)
-                
-        except ImportError:
-            # Fallback response if SiteSettings is not available
-            logger.warning("SiteSettings not available, returning fallback response")
+        site_settings = SiteSettings.objects.filter(is_active=True).first()
+        if site_settings:
+            serializer = SiteSettingsSerializer(site_settings)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
             return Response({
-                'message': 'Sayt tənzimləmələri hazır deyil.',
+                'message': 'Sayt tənzimləmələri tapılmadı.',
                 'success': False
-            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            }, status=status.HTTP_404_NOT_FOUND)
             
     except Exception as e:
-        logger.error(f"Site settings error: {str(e)}", exc_info=True)
+        # logger.error(f"Site settings error: {str(e)}")
         return Response({
             'message': 'Sayt tənzimləmələri yüklənərkən xəta baş verdi.',
             'success': False
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def test_email(request):
     """
-    Email konfiqurasiyasını test etmək üçün endpoint - Production Ready (Admin Only)
+    Email konfiqurasiyasını test etmək üçün endpoint
     """
     try:
-        # Check if user is staff/admin
-        if not request.user.is_staff:
-            logger.warning(f"Unauthorized test email attempt by user: {request.user.username}")
-            return Response({
-                'error': 'Bu əməliyyat üçün icazəniz yoxdur',
-                'success': False
-            }, status=status.HTTP_403_FORBIDDEN)
+        from django.core.mail import send_mail
         
-        # Check email configuration
-        try:
-            from lib.email_utils import check_email_configuration
-            
-            config_status = check_email_configuration()
-            if not config_status['is_configured']:
-                logger.warning("Email configuration incomplete for test")
-                return Response({
-                    'message': 'Email konfiqurasiyası tam deyil',
-                    'config': config_status,
-                    'success': False
-                }, status=status.HTTP_400_BAD_REQUEST)
-                
-        except ImportError:
-            # Fallback configuration check
-            config_status = {
-                'email_host': getattr(settings, 'EMAIL_HOST', None),
-                'email_port': getattr(settings, 'EMAIL_PORT', None),
-                'email_host_user': getattr(settings, 'EMAIL_HOST_USER', None),
-                'default_from_email': getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-                'admin_email': getattr(settings, 'ADMIN_EMAIL', None),
-                'is_configured': False
-            }
-            
-            if not all([config_status['email_host'], config_status['email_port'], 
-                       config_status['email_host_user'], config_status['default_from_email']]):
-                return Response({
-                    'message': 'Email konfiqurasiyası tam deyil',
-                    'config': config_status,
-                    'success': False
-                }, status=status.HTTP_400_BAD_REQUEST)
+        # Email konfiqurasiyasını log edirik
+        # logger.info(f"Testing email configuration:")
+        # logger.info(f"EMAIL_HOST: {settings.EMAIL_HOST}")
+        # logger.info(f"EMAIL_PORT: {settings.EMAIL_PORT}")
+        # logger.info(f"EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
+        # logger.info(f"DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
+        # logger.info(f"ADMIN_EMAIL: {settings.ADMIN_EMAIL}")
         
         # Test email göndəririk
-        test_subject = 'Test Email - Dostum Kitab'
-        test_message = 'Bu bir test email-dir. Email konfiqurasiyası düzgün işləyir.'
-        
-        recipient_email = getattr(settings, 'ADMIN_EMAIL', getattr(settings, 'DEFAULT_FROM_EMAIL', 'admin@dostumkitab.az'))
-        
-        result = send_mail(
-            subject=test_subject,
-            message=test_message,
+        send_mail(
+            subject='Test Email - Fazilet Kitab',
+            message='Bu bir test email-dir. Email konfiqurasiyası düzgün işləyir.',
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[recipient_email],
-            fail_silently=True,  # Production: don't fail on email errors
+            recipient_list=[settings.ADMIN_EMAIL],
+            fail_silently=False,
         )
         
-        if result:
-            logger.info(f"Test email sent successfully to {recipient_email} by admin {request.user.username}")
-            return Response({
-                'message': 'Test email uğurla göndərildi!',
-                'success': True
-            })
-        else:
-            logger.warning(f"Test email failed to send to {recipient_email}")
-            return Response({
-                'message': 'Test email göndərilmədi',
-                'success': False
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            'message': 'Test email uğurla göndərildi!',
+            'success': True
+        })
         
     except Exception as e:
-        logger.error(f"Test email error: {str(e)}", exc_info=True)
+        # logger.error(f"Test email error: {str(e)}")
         return Response({
             'message': f'Test email xətası: {str(e)}',
             'success': False

@@ -2,7 +2,15 @@ from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.core.files.storage import default_storage
 from .models import SiteSettings, Logo
-from lib.imagekit_utils import upload_logo_to_imagekit, delete_logo_from_imagekit
+
+# ImageKit utils import-unu try-except ilə əhatə et
+try:
+    from lib.imagekit_utils import upload_logo_to_imagekit, delete_logo_from_imagekit
+    IMAGEKIT_AVAILABLE = True
+except ImportError:
+    IMAGEKIT_AVAILABLE = False
+    print("Warning: lib.imagekit_utils not available, ImageKit features disabled")
+
 import logging
 import os
 
@@ -16,6 +24,10 @@ def handle_logo_upload(sender, instance, created, **kwargs):
     Logo-lar yükləndikdə avtomatik ImageKit-ə yükləyir
     Bu signal admin-dəki save_model metodu ilə birlikdə işləyir
     """
+    if not IMAGEKIT_AVAILABLE:
+        print("ImageKit not available, skipping logo upload")
+        return
+        
     print(f"=== Logo upload signal triggered for {instance.site_name} ===")
     print(f"Instance ID: {instance.pk}")
     print(f"Created: {created}")
@@ -71,6 +83,10 @@ def handle_logo_deletion(sender, instance, **kwargs):
     """
     Logo-lar silindikdə ImageKit-dən də silir
     """
+    if not IMAGEKIT_AVAILABLE:
+        print("ImageKit not available, skipping logo deletion")
+        return
+        
     # Navbar logo sil
     if instance.navbar_logo_imagekit_url:
         file_id = instance.navbar_logo_imagekit_url.split('/')[-1].split('?')[0]

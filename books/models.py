@@ -79,7 +79,7 @@ class Book(models.Model):
     description = models.TextField(verbose_name="Təsvir")
     language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, default='az', verbose_name="Dil")
     pages = models.PositiveIntegerField(verbose_name="Səhifə Sayı")
-    publication_date = models.DateField(verbose_name="Nəşr Tarixi")
+    publication_date = models.DateField(blank=True, null=True, verbose_name="Nəşr Tarixi")
     
     # Qiymət və stok
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Qiymət (₼)")
@@ -133,14 +133,14 @@ class Book(models.Model):
         return None
     
     def get_optimized_cover_url(self, width=None, height=None, quality=80):
-        """Optimizasiya edilmiş üz qabığı URL-ni qaytarır - Production Error Handling ilə"""
+        """Optimizasiya edilmiş üz qabığı URL-ni qaytarır"""
         if self.cover_imagekit_url:
             try:
                 from lib.imagekit_utils import imagekit_manager
                 filename = self.cover_imagekit_url.split('/')[-1]
                 return imagekit_manager.optimize_image_url(filename, width, height, quality)
             except ImportError:
-                # ImageKit not available - fallback
+                print("Warning: lib.imagekit_utils not available, returning original URL")
                 return self.get_cover_image_url()
         return self.get_cover_image_url()
     
@@ -153,9 +153,11 @@ class Book(models.Model):
     
     @property
     def average_rating(self):
-        """Orta reytinqi hesabla - Production Performance ilə"""
-        from django.db.models import Avg
-        return self.reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+        """Orta reytinqi hesabla"""
+        reviews = self.reviews.all()
+        if reviews:
+            return sum([review.rating for review in reviews]) / len(reviews)
+        return 0
     
     @property
     def reviews_count(self):
@@ -191,8 +193,8 @@ class BookReview(models.Model):
 from django.db import models
 
 class Banner(models.Model):
-    title = models.CharField(max_length=200, verbose_name="Başlıq")
-    subtitle = models.CharField(max_length=300, blank=True, verbose_name="Alt başlıq")
+    title = models.CharField(max_length=200, blank=True, null=True, verbose_name="Başlıq")
+    subtitle = models.CharField(max_length=300, blank=True, null=True, verbose_name="Alt başlıq")
     image = models.ImageField(upload_to='banners/', blank=True, null=True, verbose_name="Şəkil")
     imagekit_url = models.URLField(blank=True, null=True, verbose_name="ImageKit URL")
     imagekit_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="ImageKit ID")
@@ -205,6 +207,6 @@ class Banner(models.Model):
         verbose_name_plural = "Reklam Panoları"
 
     def __str__(self):
-        return self.title
+        return self.title or f"Banner {self.id}"
 
 
