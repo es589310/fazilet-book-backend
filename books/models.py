@@ -79,7 +79,7 @@ class Book(models.Model):
     description = models.TextField(verbose_name="Təsvir")
     language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, default='az', verbose_name="Dil")
     pages = models.PositiveIntegerField(verbose_name="Səhifə Sayı")
-    publication_date = models.DateField(verbose_name="Nəşr Tarixi")
+    publication_date = models.DateField(blank=True, null=True, verbose_name="Nəşr Tarixi")
     
     # Qiymət və stok
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Qiymət (₼)")
