@@ -69,6 +69,7 @@ class BookListSerializer(serializers.ModelSerializer):
     """Kitab siyahısı üçün sadə serializer"""
     authors = AuthorSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
+    publisher = PublisherSerializer(read_only=True)
     average_rating = serializers.ReadOnlyField()
     reviews_count = serializers.ReadOnlyField()
     discount_percentage = serializers.ReadOnlyField()
@@ -77,7 +78,7 @@ class BookListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = [
-            'id', 'title', 'slug', 'authors', 'category', 'price', 'original_price',
+            'id', 'title', 'slug', 'authors', 'category', 'publisher', 'price', 'original_price',
             'cover_image', 'is_featured', 'is_bestseller', 'is_new',
             'average_rating', 'reviews_count', 'discount_percentage', 'stock_quantity'
         ]
