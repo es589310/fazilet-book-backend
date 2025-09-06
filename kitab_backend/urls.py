@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
+from django.shortcuts import redirect
 
 # Admin konfiqurasiyasını import et
 from . import admin as admin_config
@@ -12,7 +13,11 @@ admin.site.site_header = settings.ADMIN_SITE_HEADER
 admin.site.site_title = settings.ADMIN_SITE_TITLE
 admin.site.index_title = settings.ADMIN_INDEX_TITLE
 
+def redirect_to_admin(request):
+    return redirect('/admin/')
+
 urlpatterns = [
+    path('', redirect_to_admin, name='home'),
     path('admin/', admin.site.urls),
     path('api/auth/', include('users.urls')),
     path('api/books/', include('books.urls')),
