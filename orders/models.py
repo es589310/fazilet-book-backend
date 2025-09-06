@@ -93,7 +93,7 @@ class Order(models.Model):
     
     # Sifariş məlumatları
     order_number = models.CharField(max_length=20, unique=True, verbose_name="Sifariş Nömrəsi")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders', verbose_name="İstifadəçi")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders', verbose_name="İstifadəçi", null=True, blank=True)
     
     # Status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="Status")
@@ -109,7 +109,7 @@ class Order(models.Model):
     # Çatdırılma məlumatları
     delivery_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, verbose_name="Çatdırılma Ünvanı")
     delivery_name = models.CharField(max_length=200, verbose_name="Alıcı Adı")
-    delivery_phone = models.CharField(max_length=20, verbose_name="Alıcı Telefonu")
+    delivery_phone = models.CharField(max_length=50, verbose_name="Alıcı Telefonu")
     delivery_address_text = models.TextField(verbose_name="Çatdırılma Ünvanı (Mətn)")
     
     # Qeydlər

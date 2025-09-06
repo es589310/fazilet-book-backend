@@ -66,7 +66,7 @@ class OrderStatusHistoryInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = [
-        'order_number', 'user', 'status', 'payment_status', 
+        'order_number', 'user', 'delivery_name', 'delivery_phone', 'status', 'payment_status', 
         'total_amount', 'created_at'
     ]
     list_filter = [
@@ -74,11 +74,11 @@ class OrderAdmin(admin.ModelAdmin):
     ]
     search_fields = [
         'order_number', 'user__username', 'user__email', 
-        'delivery_name', 'delivery_phone'
+        'delivery_name', 'delivery_phone', 'delivery_address_text'
     ]
     list_editable = ['status', 'payment_status']
     inlines = [OrderItemInline, OrderStatusHistoryInline]
-    readonly_fields = ['order_number', 'created_at', 'updated_at']
+    readonly_fields = ['order_number', 'created_at', 'updated_at', 'subtotal', 'total_amount']
     list_per_page = 25
     ordering = ['-created_at']
     date_hierarchy = 'created_at'
@@ -93,7 +93,7 @@ class OrderAdmin(admin.ModelAdmin):
             'description': 'Sifarişin qiymət hesablamaları'
         }),
         ('Çatdırılma Məlumatları', {
-            'fields': ('delivery_name', 'delivery_phone', 'delivery_address', 'delivery_address_text'),
+            'fields': ('delivery_name', 'delivery_phone', 'delivery_address_text'),
             'description': 'Məhsulun çatdırılması üçün lazım olan məlumatlar'
         }),
         ('Qeydlər', {

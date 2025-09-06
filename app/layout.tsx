@@ -4,9 +4,45 @@ import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'Fazilet Kitab - Online Kitab Mağazası',
+  description: 'Ən yaxşı kitabları online satın alın. Türk və dünya ədəbiyyatı.',
+  keywords: 'kitab, online mağaza, türk ədəbiyyatı, dünya ədəbiyyatı, kitab satışı',
+  authors: [{ name: 'Dostum Kitab' }],
+  creator: 'Dostum Kitab',
+  publisher: 'Dostum Kitab',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://dostumkitab.az'),
+  alternates: {
+    canonical: '/',
+  },
+      openGraph: {
+      title: 'Dostum Kitab - Online Kitab Mağazası',
+      description: 'Ən yaxşı kitabları online satın alın. Türk və dünya ədəbiyyatı.',
+      url: 'https://dostumkitab.az',
+      siteName: 'Dostum Kitab',
+      locale: 'az_AZ',
+      type: 'website',
+    },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Dostum Kitab - Online Kitab Mağazası',
+    description: 'Ən yaxşı kitabları online satın alın.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 }
 
 export default function RootLayout({
@@ -15,7 +51,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="tr">
       <head>
         <style>{`
 html {

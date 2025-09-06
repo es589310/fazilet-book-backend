@@ -1,0 +1,93 @@
+/* Admin Panel Custom CSS */
+
+/* Filter stilini yaxşılaşdır */
+#changelist-filter {
+    background: linear-gradient(135deg, #07354e 0%, #0D5A8A 100%);
+    border: 1px solid #0A4A7A;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+#changelist-filter h2 {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    margin: -15px -15px 15px -15px;
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    border-radius: 8px 8px 0 0;
+}
+
+#changelist-filter li {
+    list-style: none;
+    margin: 8px 0;
+}
+
+#changelist-filter a {
+    color: #007bff;
+    text-decoration: none;
+    padding: 5px 0;
+    display: block;
+    transition: color 0.3s ease;
+}
+
+#changelist-filter a:hover {
+    color: #0056b3;
+}
+
+#changelist-filter .selected {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Admin Panel Scroll Pozisiyası Qorunması */
+.admin-scroll-preserve {
+    scroll-behavior: smooth;
+}
+
+/* Admin panelində scroll pozisiyasını qoruyan əlavə stillər */
+.admin-content {
+    min-height: 100vh;
+}
+
+/* Scroll pozisiyasını qoruyan container */
+.scroll-preserve-container {
+    position: relative;
+}
+
+/* Admin panelində naviqasiya zamanı scroll pozisiyasını qoruyan stillər */
+.admin-navigation {
+    scroll-behavior: auto;
+}
+
+/* Admin panelində link-lərə hover effekti */
+.admin-content a:hover {
+    transition: all 0.2s ease;
+}
+
+/* Admin panelində form-larə scroll pozisiyasını qoruyan stillər */
+.admin-form {
+    scroll-behavior: auto;
+}
+
+/* Admin panelində scroll pozisiyasını qoruyan JavaScript təminatı */
+.admin-scroll-fix {
+    scroll-behavior: auto;
+}
+
+/* Admin panelində naviqasiya zamanı scroll pozisiyasını qoruyan stillər */
+.admin-nav-links a {
+    transition: all 0.2s ease;
+}
+
+/* Admin panelində breadcrumb scroll pozisiyasını qoruyan stillər */
+.breadcrumbs {
+    scroll-behavior: auto;
+}
+
+/* Admin panelində pagination scroll pozisiyasını qoruyan stillər */
+.paginator {
+    scroll-behavior: auto;
+}

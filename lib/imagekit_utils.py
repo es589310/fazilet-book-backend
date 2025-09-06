@@ -1,15 +1,21 @@
+"""
+Production-ready ImageKit utilities for Dostum Kitab
+Handles image uploads, optimization, and fallbacks
+"""
+
 import requests
 import os
 from django.conf import settings
 from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
+from typing import Dict, Optional, Union
 
 class ImageKitManager:
     def __init__(self):
-        self.public_key = settings.IMAGEKIT_PUBLIC_KEY
-        self.private_key = settings.IMAGEKIT_PRIVATE_KEY
-        self.url_endpoint = settings.IMAGEKIT_URL_ENDPOINT
-        self.folder = settings.IMAGEKIT_FOLDER
+        self.public_key = getattr(settings, 'IMAGEKIT_PUBLIC_KEY', '')
+        self.private_key = getattr(settings, 'IMAGEKIT_PRIVATE_KEY', '')
+        self.url_endpoint = getattr(settings, 'IMAGEKIT_URL_ENDPOINT', '')
+        self.folder = getattr(settings, 'IMAGEKIT_FOLDER', 'dostumkitab')
     
     def upload_image(self, image_file, folder_path=None, filename=None):
         """
@@ -105,7 +111,7 @@ class ImageKitManager:
         return self.get_image_url(filename, transformation_string)
 
 # Global instance
-imagekit_manager = ImageKitManager() 
+imagekit_manager = ImageKitManager()
 
 def get_imagekit_url(image_field):
     """
@@ -210,4 +216,26 @@ def delete_logo_from_imagekit(file_id):
         return {
             'success': False,
             'error': f'Logo silmə xətası: {str(e)}'
-        } 
+        }
+
+# Convenience functions
+def upload_image(image_file, folder_path: str = 'general', 
+                filename: Optional[str] = None) -> Dict[str, Union[str, bool, int]]:
+    """Convenience function for image upload"""
+    return imagekit_manager.upload_image(image_file, folder_path, filename)
+
+def optimize_image_url(filename: str, width: Optional[int] = None, 
+                      height: Optional[int] = None, quality: int = 80) -> str:
+    """Convenience function for image URL optimization"""
+    return imagekit_manager.optimize_image_url(filename, width, height, quality)
+
+def delete_image(file_id: str) -> bool:
+    """Convenience function for image deletion"""
+    return imagekit_manager.delete_image(file_id)
+
+def get_image_info(file_id: str) -> Optional[Dict]:
+    """Convenience function for getting image info"""
+    return imagekit_manager.get_image_url(file_id)
+
+# Create global instance
+imagekit_manager = ImageKitManager() 

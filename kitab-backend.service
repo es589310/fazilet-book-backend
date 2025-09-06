@@ -1,0 +1,37 @@
+[Unit]
+Description=Kitab Backend Django Application
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/kitab_backend
+Environment="PATH=/var/www/kitab_backend/venv/bin"
+Environment="DJANGO_SETTINGS_MODULE=kitab_backend.settings"
+Environment="DJANGO_ENV=production"
+ExecStart=/var/www/kitab_backend/venv/bin/gunicorn --config gunicorn.conf.py kitab_backend.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+Restart=always
+RestartSec=10
+
+# Security
+NoNewPrivileges=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/kitab_backend/media /var/www/kitab_backend/staticfiles /var/log/django
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target 

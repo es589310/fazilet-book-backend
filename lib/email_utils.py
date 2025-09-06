@@ -1,257 +1,247 @@
-import os
+"""
+Production-ready email utilities for Dostum Kitab
+Handles email sending with proper error handling and fallbacks
+"""
+
+import logging
 from django.core.mail import send_mail
 from django.conf import settings
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
+from django.utils import timezone
 
-def send_welcome_email(user):
+logger = logging.getLogger(__name__)
+
+def send_contact_email(name, email, subject, message, **kwargs):
     """
-    Yeni qeydiyyatdan keçən istifadəçiyə xoş gəlmə emaili göndərir
-    """
-    try:
-        # Email məzmunu
-        subject = "dostumkitab.az-a xoş gəlmisiniz! 🚀"
-        
-        # HTML məzmunu
-        html_message = f"""
-        <!DOCTYPE html>
-        <html lang="az">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Xoş gəlmisiniz!</title>
-            <style>
-                body {{
-                    font-family: Arial, sans-serif;
-                    line-height: 1.6;
-                    color: #333;
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 20px;
-                }}
-                .header {{
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    padding: 30px;
-                    text-align: center;
-                    border-radius: 10px 10px 0 0;
-                }}
-                .content {{
-                    background: #f9f9f9;
-                    padding: 30px;
-                    border-radius: 0 0 10px 10px;
-                }}
-                .button {{
-                    display: inline-block;
-                    background: #667eea;
-                    color: white;
-                    padding: 12px 30px;
-                    text-decoration: none;
-                    border-radius: 25px;
-                    margin: 20px 0;
-                    font-weight: bold;
-                }}
-                .footer {{
-                    margin-top: 30px;
-                    padding-top: 20px;
-                    border-top: 1px solid #ddd;
-                    text-align: center;
-                    color: #666;
-                }}
-                .highlight {{
-                    background: #fff3cd;
-                    padding: 15px;
-                    border-radius: 5px;
-                    border-left: 4px solid #ffc107;
-                    margin: 20px 0;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>🎉 Xoş gəlmisiniz!</h1>
-                <p>dostumkitab.az ailəsinə qoşulduğunuz üçün təşəkkür edirik!</p>
-            </div>
-            
-            <div class="content">
-                <h2>Salam {user.first_name or user.username}!</h2>
-                
-                <p>dostumkitab.az-a xoş gəlmisiniz! 🚀</p>
-                
-                <div class="highlight">
-                    <p><strong>Qeydiyyatınız uğurla tamamlandı və artıq hesabınıza daxil ola bilərsiniz.</strong></p>
-                </div>
-                
-                <p>Hesabınıza giriş etmək üçün aşağıdakı düyməyə klikləyin:</p>
-                
-                <div style="text-align: center;">
-                    <a href="https://dostumkitab.az.com/login" class="button">
-                        ➡️ Giriş Et
-                    </a>
-                </div>
-                
-                <p style="margin-top: 20px;">
-                    <strong>Əgər düymə işləmirsə, bu linki kopyalayıb brauzerinizə yapışdırın:</strong><br>
-                    <a href="https://dostumkitab.az.com/login">https://dostumkitab.az.com/login</a>
-                </p>
-                
-                <p>Hesabınızda siz:</p>
-                <ul>
-                    <li>📚 Minlərlə kitabı kəşf edə bilərsiniz</li>
-                    <li>🛒 Təhlükəsiz alış-veriş edə bilərsiniz</li>
-                    <li>🚚 Sürətli çatdırılma xidmətindən istifadə edə bilərsiniz</li>
-                    <li>💳 Təhlükəsiz ödəniş üsullarından istifadə edə bilərsiniz</li>
-                </ul>
-            </div>
-            
-            <div class="footer">
-                <p><strong>Təşəkkür edirik və xoş istifadə təcrübəsi arzulayırıq! 🚀</strong></p>
-                <p>Hörmətlə,<br><strong>dostumkitab.az komandası</strong></p>
-            </div>
-        </body>
-        </html>
-        """
-        
-        # Sadə mətn məzmunu (HTML dəstəklənməyən email client-lar üçün)
-        plain_message = f"""
-Salam {user.first_name or user.username},
-
-dostumkitab.az xoş gəlmisiniz!  
-Qeydiyyatınız uğurla tamamlandı və artıq hesabınıza daxil ola bilərsiniz.
-
-Hesabınıza giriş etmək üçün:  
-➡️ https://dostumkitab.az.com/login
-
-Təşəkkür edirik və xoş istifadə təcrübəsi arzulayırıq! 🚀
-
-Hörmətlə,  
-dostumkitab.az komandası
-        """
-        
-        # Email göndəririk
-        send_mail(
-            subject=subject,
-            message=strip_tags(plain_message),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            html_message=html_message,
-            fail_silently=False,
-        )
-        
-        print(f"✅ Xoş gəlmə emaili göndərildi: {user.email}")
-        return True
-        
-    except Exception as e:
-        print(f"❌ Email göndərilmədi: {str(e)}")
-        return False
-
-def send_contact_email(name, email, subject, message):
-    """
-    Əlaqə formundan gələn mesajı admin-ə göndərir
+    Production-ready contact email sending with fallbacks
+    
+    Args:
+        name: Sender name
+        email: Sender email
+        subject: Email subject
+        message: Email message
+        **kwargs: Additional email parameters
+    
+    Returns:
+        bool: True if email sent successfully, False otherwise
     """
     try:
-        # Email məzmunu
-        email_subject = f"Yeni Əlaqə Mesajı: {subject}"
+        # Prepare email content
+        email_subject = f"Yeni müraciət: {subject}"
         
-        # HTML məzmunu
-        html_message = f"""
-        <!DOCTYPE html>
-        <html lang="az">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Yeni Əlaqə Mesajı</title>
-            <style>
-                body {{
-                    font-family: Arial, sans-serif;
-                    line-height: 1.6;
-                    color: #333;
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 20px;
-                }}
-                .header {{
-                    background: #dc3545;
-                    color: white;
-                    padding: 20px;
-                    text-align: center;
-                    border-radius: 10px 10px 0 0;
-                }}
-                .content {{
-                    background: #f9f9f9;
-                    padding: 20px;
-                    border-radius: 0 0 10px 10px;
-                }}
-                .field {{
-                    margin: 15px 0;
-                    padding: 10px;
-                    background: white;
-                    border-radius: 5px;
-                    border-left: 4px solid #007bff;
-                }}
-                .field strong {{
-                    color: #007bff;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h2>📧 Yeni Əlaqə Mesajı</h2>
-            </div>
-            
-            <div class="content">
-                <div class="field">
-                    <strong>Ad:</strong> {name}
-                </div>
-                
-                <div class="field">
-                    <strong>Email:</strong> {email}
-                </div>
-                
-                <div class="field">
-                    <strong>Mövzu:</strong> {subject}
-                </div>
-                
-                <div class="field">
-                    <strong>Mesaj:</strong><br>
-                    {message}
-                </div>
-                
-                <p style="margin-top: 20px; text-align: center; color: #666;">
-                    Bu mesaj dostumkitab.az saytının əlaqə formasından göndərilib.
-                </p>
-            </div>
-        </body>
-        </html>
-        """
-        
-        # Sadə mətn məzmunu
-        plain_message = f"""
-Yeni Əlaqə Mesajı
+        email_message = f"""
+Yeni müraciət alındı:
 
-Ad: {name}
+Göndərən: {name}
 Email: {email}
 Mövzu: {subject}
+Tarix: {timezone.now().strftime('%d.%m.%Y %H:%M')}
 
 Mesaj:
 {message}
 
-Bu mesaj dostumkitab.az saytının əlaqə formasından göndərilib.
+---
+Bu email dostumkitab.az saytından avtomatik göndərilmişdir.
         """
         
-        # Email göndəririk
-        send_mail(
+        # Get recipient email from settings or use default
+        recipient_email = getattr(settings, 'ADMIN_EMAIL', getattr(settings, 'DEFAULT_FROM_EMAIL', 'admin@dostumkitab.az'))
+        
+        # Send email with production settings
+        result = send_mail(
             subject=email_subject,
-            message=strip_tags(plain_message),
+            message=email_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.ADMIN_EMAIL],
-            html_message=html_message,
-            fail_silently=False,
+            recipient_list=[recipient_email],
+            fail_silently=True,  # Production: don't fail on email errors
+            **kwargs
         )
         
-        print(f"✅ Əlaqə emaili göndərildi: {email}")
-        return True
-        
+        if result:
+            logger.info(f"Contact email sent successfully to {recipient_email}")
+            return True
+        else:
+            logger.warning(f"Contact email failed to send to {recipient_email}")
+            return False
+            
     except Exception as e:
-        print(f"❌ Email göndərilmədi: {str(e)}")
+        logger.error(f"Contact email error: {str(e)}")
+        return False
+
+def send_notification_email(recipient_email, subject, message, **kwargs):
+    """
+    Send notification email with production settings
+    
+    Args:
+        recipient_email: Recipient email address
+        subject: Email subject
+        message: Email message
+        **kwargs: Additional email parameters
+    
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    try:
+        result = send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[recipient_email],
+            fail_silently=True,  # Production: don't fail on email errors
+            **kwargs
+        )
+        
+        if result:
+            logger.info(f"Notification email sent successfully to {recipient_email}")
+            return True
+        else:
+            logger.warning(f"Notification email failed to send to {recipient_email}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Notification email error: {str(e)}")
+        return False
+
+def send_auto_reply_email(recipient_email, name, subject, **kwargs):
+    """
+    Send auto-reply email with production settings
+    
+    Args:
+        recipient_email: Recipient email address
+        name: Recipient name
+        subject: Original message subject
+        **kwargs: Additional email parameters
+    
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    try:
+        auto_reply_subject = "Mesajınız alındı - dostumkitab.az"
+        
+        auto_reply_message = f"""
+Salam {name},
+
+Mesajınız uğurla alındı və nəzərdən keçirilir.
+
+Mesaj məlumatları:
+Mövzu: {subject}
+Tarix: {timezone.now().strftime('%d.%m.%Y %H:%M')}
+
+Tezliklə sizinlə əlaqə saxlayacağıq.
+
+Təşəkkürlər,
+dostumkitab.az komandası 🚀
+        """
+        
+        result = send_mail(
+            subject=auto_reply_subject,
+            message=auto_reply_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[recipient_email],
+            fail_silently=True,  # Production: don't fail on email errors
+            **kwargs
+        )
+        
+        if result:
+            logger.info(f"Auto-reply email sent successfully to {recipient_email}")
+            return True
+        else:
+            logger.warning(f"Auto-reply email failed to send to {recipient_email}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Auto-reply email error: {str(e)}")
+        return False
+
+def check_email_configuration():
+    """
+    Check if email configuration is properly set up
+    
+    Returns:
+        dict: Configuration status and details
+    """
+    config_status = {
+        'email_host': getattr(settings, 'EMAIL_HOST', None),
+        'email_port': getattr(settings, 'EMAIL_PORT', None),
+        'email_host_user': getattr(settings, 'EMAIL_HOST_USER', None),
+        'default_from_email': getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+        'admin_email': getattr(settings, 'ADMIN_EMAIL', None),
+        'is_configured': False
+    }
+    
+    # Check if essential email settings are configured
+    if (config_status['email_host'] and 
+        config_status['email_port'] and 
+        config_status['email_host_user'] and 
+        config_status['default_from_email']):
+        config_status['is_configured'] = True
+    
+    return config_status
+
+def get_email_fallback_message():
+    """
+    Get fallback message when email is not configured
+    
+    Returns:
+        str: Fallback message
+    """
+    return """
+Email konfiqurasiyası hazır deyil. 
+Zəhmət olmasa sistem administratoru ilə əlaqə saxlayın.
+    """
+
+def send_welcome_email(user, **kwargs):
+    """
+    Send welcome email to newly registered users
+    
+    Args:
+        user: User instance
+        **kwargs: Additional email parameters
+    
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    try:
+        welcome_subject = "dostumkitab.az-a xoş gəlmisiniz! 🚀"
+        
+        welcome_message = f"""
+Salam {user.first_name or user.username}!
+
+dostumkitab.az saytına qeydiyyatdan keçdiyiniz üçün təşəkkür edirik! 🎉
+
+Hesabınız uğurla yaradıldı və indi saytımızın bütün imkanlarından istifadə edə bilərsiniz.
+
+Hesab məlumatları:
+İstifadəçi adı: {user.username}
+Qeydiyyat tarixi: {timezone.now().strftime('%d.%m.%Y %H:%M')}
+
+Saytımızda:
+📚 Ən yaxşı kitablar
+🛒 Rahat alış-veriş
+🚚 Sürətli çatdırılma
+💳 Təhlükəsiz ödəniş
+
+Suallarınız üçün bizimlə əlaqə saxlayın.
+
+Təşəkkürlər,
+dostumkitab.az komandası 📖✨
+        """
+        
+        result = send_mail(
+            subject=welcome_subject,
+            message=welcome_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,  # Production: don't fail on email errors
+            **kwargs
+        )
+        
+        if result:
+            logger.info(f"Welcome email sent successfully to {user.email}")
+            return True
+        else:
+            logger.warning(f"Welcome email failed to send to {user.email}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Welcome email error: {str(e)}")
         return False 
